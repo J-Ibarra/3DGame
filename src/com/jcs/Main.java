@@ -1,15 +1,25 @@
 package com.jcs;
 
 import com.jcs.callback.KeyCallback;
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 
@@ -28,8 +38,98 @@ public class Main {
     private GLFWWindowCloseCallback windowCloseCallback;
     private GLFWFramebufferSizeCallback framebufferSizeCallback;
 
+    ShaderProgram shader;
+
+    int VAO;
+    int texture;
+
+    Matrix4f model;
+    Matrix4f view;
+    Matrix4f projection;
+
     private void init() throws Exception {
 
+        shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
+
+        float[] vertices = new float[]{
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+                -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+        };
+
+        int floatByteSize = 4;
+        int positionFloatCount = 3;
+        int textureFloatCount = 2;
+        int floatsPerVertex = positionFloatCount + textureFloatCount;
+        int vertexFloatSizeInBytes = floatByteSize * floatsPerVertex;
+
+        VAO = glGenVertexArrays();
+        glBindVertexArray(VAO);
+
+        int VBO = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        FloatBuffer fb = BufferUtils.createFloatBuffer(vertices.length);
+        fb.put(vertices).flip();
+        glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, vertexFloatSizeInBytes, 0);
+        glEnableVertexAttribArray(0);
+
+        int byteOffset = floatByteSize * positionFloatCount;
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, vertexFloatSizeInBytes, byteOffset);
+        glEnableVertexAttribArray(2);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
+
+        texture = Texture.createTexture("test/texture.jpg");
+
+        model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
+        view = new Matrix4f();
+        projection = new Matrix4f().setPerspective((float) Math.toRadians(60), width / height, 0.01f, 100.0f);
+
+        modelLoc = glGetUniformLocation(shader.programId, "model");
+        viewLoc = glGetUniformLocation(shader.programId, "view");
+        projLoc = glGetUniformLocation(shader.programId, "projection");
+
+        glEnable(GL_DEPTH_TEST);
     }
 
     private void initCallbacks() throws Exception {
@@ -68,10 +168,28 @@ public class Main {
     }
 
     private void update(float delta) {
-
+        shader.bind();
+        glUniformMatrix4fv(projLoc, false, projection.get(fb));
+        glUniformMatrix4fv(viewLoc, false, model.get(fb));
+        glUniformMatrix4fv(modelLoc, false, view.get(fb));
+        shader.unbind();
     }
 
+    int modelLoc;
+    int viewLoc;
+    int projLoc;
+    FloatBuffer fb = BufferUtils.createFloatBuffer(16);
+
     private void render() {
+        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        shader.bind();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        shader.unbind();
 
     }
 
@@ -79,7 +197,7 @@ public class Main {
         windowCloseCallback.free();
         framebufferSizeCallback.free();
         keyCallback.free();
-
+        shader.cleanUp();
     }
 
     private void oneSecond(int ups, int fps) {
@@ -187,8 +305,9 @@ public class Main {
 
         try {
             running = true;
-            init();
+
             initGLFW();
+            init();
             initCallbacks();
 
             loop();
