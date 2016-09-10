@@ -1,7 +1,8 @@
 package com.jcs;
 
-import com.jcs.callback.KeyCallback;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
@@ -9,14 +10,13 @@ import org.lwjgl.opengl.GL;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.Random;
 
-import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
@@ -33,12 +33,18 @@ public class Main {
     private int width;
     private int height;
 
-    private KeyCallback keyCallback;
+    public boolean[] keys = new boolean[GLFW_KEY_LAST + 1];
 
+    private GLFWKeyCallback keyCallback;
+    private GLFWCursorPosCallback cursorPosCallback;
+    private GLFWScrollCallback scrollCallback;
     private GLFWWindowCloseCallback windowCloseCallback;
     private GLFWFramebufferSizeCallback framebufferSizeCallback;
 
-    ShaderProgram shader;
+
+    private ShaderProgram shader;
+
+    private Camera camera;
 
     int VAO;
     int texture;
@@ -48,6 +54,7 @@ public class Main {
     Matrix4f projection;
 
     private void init() throws Exception {
+        camera = new Camera();
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
 
@@ -123,12 +130,18 @@ public class Main {
 
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
         view = new Matrix4f();
-        projection = new Matrix4f().setPerspective((float) Math.toRadians(60), width / height, 0.01f, 100.0f);
+        projection = new Matrix4f().setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
 
         modelLoc = glGetUniformLocation(shader.programId, "model");
         viewLoc = glGetUniformLocation(shader.programId, "view");
         projLoc = glGetUniformLocation(shader.programId, "projection");
+        locOurTexture = glGetUniformLocation(shader.programId, "ourTexture");
 
+        config();
+    }
+
+    private void config() {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glEnable(GL_DEPTH_TEST);
     }
 
@@ -141,7 +154,7 @@ public class Main {
             }
         });
 
-        glfwSetKeyCallback(window, keyCallback = new KeyCallback() {
+        glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
 
@@ -151,7 +164,7 @@ public class Main {
                 if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
                     running = false;
 
-                super.invoke(window, key, scancode, action, mods);
+                keys[key] = action != GLFW_RELEASE;
             }
         });
 
@@ -161,23 +174,60 @@ public class Main {
             public void invoke(long window, int width, int height) {
                 Main.this.width = width;
                 Main.this.height = height;
+                projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
                 glViewport(0, 0, width, height);
+            }
+        });
+
+        glfwSetScrollCallback(window, scrollCallback = new GLFWScrollCallback() {
+            @Override
+            public void invoke(long window, double xoffset, double yoffset) {
+
+                camera.processMouseScroll((float) yoffset);
+
+                projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
+            }
+        });
+
+        glfwSetCursorPosCallback(window, cursorPosCallback = new GLFWCursorPosCallback() {
+            @Override
+            public void invoke(long window, double xpos, double ypos) {
+                camera.processMouseMovement(xpos, ypos);
             }
         });
 
     }
 
     private void update(float delta) {
+
+        if (keys[GLFW_KEY_W])
+            camera.processKeyboard(Camera.Movement.FORWARD, delta);
+        if (keys[GLFW_KEY_S])
+            camera.processKeyboard(Camera.Movement.BACKWARD, delta);
+        if (keys[GLFW_KEY_A])
+            camera.processKeyboard(Camera.Movement.LEFT, delta);
+        if (keys[GLFW_KEY_D])
+            camera.processKeyboard(Camera.Movement.RIGHT, delta);
+
+        float angle = delta;
+        q.rotateAxis(angle, vec);
+
         shader.bind();
         glUniformMatrix4fv(projLoc, false, projection.get(fb));
-        glUniformMatrix4fv(viewLoc, false, model.get(fb));
-        glUniformMatrix4fv(modelLoc, false, view.get(fb));
+        glUniformMatrix4fv(viewLoc, false, camera.getViewMatrix().get(fb));
+        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        glUniform1i(locOurTexture, 0);
         shader.unbind();
     }
 
     int modelLoc;
     int viewLoc;
     int projLoc;
+    int locOurTexture;
+
+    Random r = new Random();
+    Vector3f vec = new Vector3f(r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1);
+    Quaternionf q = new Quaternionf();
     FloatBuffer fb = BufferUtils.createFloatBuffer(16);
 
     private void render() {
@@ -194,14 +244,22 @@ public class Main {
     }
 
     private void finish() {
+        keyCallback.free();
+        cursorPosCallback.free();
+        scrollCallback.free();
         windowCloseCallback.free();
         framebufferSizeCallback.free();
-        keyCallback.free();
         shader.cleanUp();
     }
 
+    private int i = 0;
+
     private void oneSecond(int ups, int fps) {
         glfwSetWindowTitle(window, tittle + " || ups: " + ups + ", fps: " + fps);
+        i++;
+        if (i % 5 == 0) {
+            vec = new Vector3f(r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1);
+        }
     }
 
     private void loop() {
@@ -256,12 +314,15 @@ public class Main {
         // Configure our window
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // the window will be resizable
+        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE); // the window will be decorate
 
         // Get the resolution of the primary monitor
         long monitor = glfwGetPrimaryMonitor();
         GLFWVidMode vidmode = glfwGetVideoMode(monitor);
 
+        //int iWidth = vidmode.width();
+        //int iHeight = vidmode.height();
         int iWidth = 480;
         int iHeight = 360;
 
