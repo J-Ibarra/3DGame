@@ -1,10 +1,9 @@
 package com.jcs;
 
-
+import com.jcs.callback.KeyCallback;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
 import java.nio.IntBuffer;
@@ -24,25 +23,48 @@ public class Main {
     private int width;
     private int height;
 
+    private KeyCallback keyCallback;
+
+    private GLFWWindowCloseCallback windowCloseCallback;
+    private GLFWFramebufferSizeCallback framebufferSizeCallback;
+
     private void init() throws Exception {
 
     }
 
     private void initCallbacks() throws Exception {
-        // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+
+        glfwSetWindowCloseCallback(window, windowCloseCallback = new GLFWWindowCloseCallback() {
+            @Override
+            public void invoke(long window) {
                 running = false;
+            }
         });
 
-        glfwSetWindowCloseCallback(window, window -> running = false);
+        glfwSetKeyCallback(window, keyCallback = new KeyCallback() {
+            @Override
+            public void invoke(long window, int key, int scancode, int action, int mods) {
 
-        glfwSetFramebufferSizeCallback(window, (window, width, height) -> {
-            Main.this.width = width;
-            Main.this.height = height;
-            glViewport(0, 0, width, height);
-            System.out.println("width: " + width + ", height: " + height);
+                if (key == GLFW_KEY_UNKNOWN)
+                    return;
+
+                if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
+                    running = false;
+
+                super.invoke(window, key, scancode, action, mods);
+            }
         });
+
+
+        glfwSetFramebufferSizeCallback(window, framebufferSizeCallback = new GLFWFramebufferSizeCallback() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                Main.this.width = width;
+                Main.this.height = height;
+                glViewport(0, 0, width, height);
+            }
+        });
+
     }
 
     private void update(float delta) {
@@ -54,6 +76,9 @@ public class Main {
     }
 
     private void finish() {
+        windowCloseCallback.free();
+        framebufferSizeCallback.free();
+        keyCallback.free();
 
     }
 
