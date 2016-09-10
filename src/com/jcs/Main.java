@@ -192,7 +192,7 @@ public class Main {
         glfwSetCursorPosCallback(window, cursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
-                camera.processMouseMovement(xpos, ypos);
+                camera.processMouseMovement((float) xpos / width, (float) ypos / height);
             }
         });
 
@@ -200,17 +200,28 @@ public class Main {
 
     private void update(float delta) {
 
-        if (keys[GLFW_KEY_W])
-            camera.processKeyboard(Camera.Movement.FORWARD, delta);
-        if (keys[GLFW_KEY_S])
-            camera.processKeyboard(Camera.Movement.BACKWARD, delta);
-        if (keys[GLFW_KEY_A])
-            camera.processKeyboard(Camera.Movement.LEFT, delta);
-        if (keys[GLFW_KEY_D])
-            camera.processKeyboard(Camera.Movement.RIGHT, delta);
+        float move = delta;
+        if (keys[GLFW_KEY_LEFT_SHIFT])
+            move *= 2.0f;
+        if (keys[GLFW_KEY_LEFT_CONTROL])
+            move *= 0.5f;
 
-        float angle = delta;
-        q.rotateAxis(angle, vec);
+        camera.update(move);
+
+        if (keys[GLFW_KEY_W])
+            camera.processKeyboard(Camera.Movement.FORWARD);
+        if (keys[GLFW_KEY_S])
+            camera.processKeyboard(Camera.Movement.BACKWARD);
+        if (keys[GLFW_KEY_A])
+            camera.processKeyboard(Camera.Movement.LEFT);
+        if (keys[GLFW_KEY_D])
+            camera.processKeyboard(Camera.Movement.RIGHT);
+        if (keys[GLFW_KEY_SPACE])
+            camera.processKeyboard(Camera.Movement.UP);
+        if (keys[GLFW_KEY_LEFT_ALT])
+            camera.processKeyboard(Camera.Movement.DOWN);
+
+        q.rotateAxis(delta, vec);
 
         shader.bind();
         glUniformMatrix4fv(projLoc, false, projection.get(fb));
