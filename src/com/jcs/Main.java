@@ -1,5 +1,6 @@
 package com.jcs;
 
+import com.jcs.test.Font;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -50,6 +51,7 @@ public class Main {
     Matrix4f model;
     Matrix4f view;
     Matrix4f projection;
+    Matrix4f ortho;
 
     private void init() throws Exception {
         camera = new Camera();
@@ -129,6 +131,7 @@ public class Main {
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
         view = new Matrix4f();
         projection = new Matrix4f().setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
+        ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
 
         modelLoc = glGetUniformLocation(shader.programId, "model");
         viewLoc = glGetUniformLocation(shader.programId, "view");
@@ -256,6 +259,9 @@ public class Main {
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(camera.getViewMatrix().get(fb));
         renderGrid();
+
+
+        Font.render(1.0f, new Vector3f(1f), new Vector3f(1f), ortho.get(fb));
     }
 
     int dl = -1;
