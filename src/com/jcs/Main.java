@@ -14,9 +14,6 @@ import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.glLoadMatrixf;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
@@ -48,7 +45,7 @@ public class Main {
     private Camera camera;
 
     int VAO;
-    int texture;
+    Texture texture;
 
     Matrix4f model;
     Matrix4f view;
@@ -127,7 +124,7 @@ public class Main {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
-        texture = Texture.createTexture("test/texture.jpg");
+        texture = Texture.createClassTexture("test/texture.jpg");
 
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
         view = new Matrix4f();
@@ -244,8 +241,7 @@ public class Main {
 
     private void render() {
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        texture.bind(0);
 
         shader.bind();
         glBindVertexArray(VAO);
