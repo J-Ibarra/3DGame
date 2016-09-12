@@ -14,6 +14,7 @@ import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glLoadMatrixf;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL15.*;
@@ -252,6 +253,44 @@ public class Main {
         glBindVertexArray(0);
         shader.unbind();
 
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrixf(projection.get(fb));
+        glMatrixMode(GL_MODELVIEW);
+        glLoadMatrixf(camera.getViewMatrix().get(fb));
+        renderGrid();
+    }
+
+    int dl = -1;
+
+    void renderGrid() {
+        if (dl == -1) {
+            dl = glGenLists(1);
+            glNewList(dl, GL_COMPILE);
+            glBegin(GL_LINES);
+            glColor3f(0.2f, 0.2f, 0.2f);
+
+            int gridSize = 40;
+            float ceiling = 3.0f;
+
+            for (int i = -gridSize; i <= gridSize; i++) {
+                glVertex3f(-gridSize, 0.0f, i);
+                glVertex3f(gridSize, 0.0f, i);
+                glVertex3f(i, 0.0f, -gridSize);
+                glVertex3f(i, 0.0f, gridSize);
+            }
+            glColor3f(0.5f, 0.5f, 0.5f);
+            for (int i = -gridSize; i <= gridSize; i++) {
+                glVertex3f(-gridSize, ceiling, i);
+                glVertex3f(gridSize, ceiling, i);
+                glVertex3f(i, ceiling, -gridSize);
+                glVertex3f(i, ceiling, gridSize);
+            }
+            glEnd();
+            glEndList();
+        }
+        glCallList(dl);
     }
 
     private void finish() {
