@@ -29,7 +29,6 @@ public class Camera {
     Vector3f up = new Vector3f();
 
 
-
     float movementSpeed = 3.0f;
     public float mouseSensitivity = 0.5f;
 

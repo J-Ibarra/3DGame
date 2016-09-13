@@ -1,102 +1,65 @@
 package com.jcs.test;
 
 import com.jcs.ShaderProgram;
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.system.CallbackI;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
+import static org.lwjgl.BufferUtils.createFloatBuffer;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.stb.STBEasyFont.stb_easy_font_print;
+import static org.lwjgl.system.MemoryUtil.memAllocPointer;
+import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * Created by Jcs on 11/9/2016.
  */
 public class Font {
-    public static String text = "Font Hud Demo, Hello Word!!";
-    private static ByteBuffer charBuffer;
-    private static int quads;
 
-    public static void render(float scale, Vector3f color, Vector3f pos, FloatBuffer fb) {
-        charBuffer = BufferUtils.createByteBuffer(text.length() * 270);
-        quads = stb_easy_font_print(0, 0, text, null, charBuffer);
 
-        //glDisable(GL_CULL_FACE);
+    public static void render(String text, Vector3f color, Vector2f pos, Matrix4f ortho) {
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glLoadMatrixf(fb);
-        //glOrtho(0.0, window.getWidth(), window.getHeight(), 0.0, -1.0, 1.0);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+        ByteBuffer charBuffer = BufferUtils.createByteBuffer(text.length() * 380);
+        int quads = stb_easy_font_print(0, 0, text, null, charBuffer);
 
+        FloatBuffer fb = new Matrix4f(ortho)
+                .translate(pos.x, pos.y, 0.0f)
+                .get(createFloatBuffer(16));
+
+        shader.bind();
+        glUniformMatrix4fv(matLocation, false, fb);
+        glUniform3fv(colorLocation, color.get(createFloatBuffer(3)));
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(2, GL_FLOAT, 16, charBuffer);
-
-        glColor3f(color.x, color.y, color.z);
-        glScalef(scale, scale, scale);
-        glPushMatrix();
-        glTranslated(pos.x, pos.y, 0.0f);
         glDrawArrays(GL_QUADS, 0, quads * 4);
-        glPopMatrix();
-
-        charBuffer.clear();
         glDisableClientState(GL_VERTEX_ARRAY);
-        //glEnable(GL_CULL_FACE);
+        shader.unbind();
     }
 
-    public static void render(String text, float scale, Vector3f color, Vector3f pos, FloatBuffer fb) {
-        charBuffer = BufferUtils.createByteBuffer(text.length() * 270);
-        quads = stb_easy_font_print(0, 0, text, null, charBuffer);
-
-        //glDisable(GL_CULL_FACE);
-
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glLoadMatrixf(fb);
-        //glOrtho(0.0, window.getWidth(), window.getHeight(), 0.0, -1.0, 1.0);
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glVertexPointer(2, GL_FLOAT, 16, charBuffer);
-
-        glColor3f(color.x, color.y, color.z);
-        glScalef(scale, scale, scale);
-        glPushMatrix();
-        glTranslated(pos.x, pos.y, 0.0f);
-        glDrawArrays(GL_QUADS, 0, quads * 4);
-        glPopMatrix();
-
-        charBuffer.clear();
-        glDisableClientState(GL_VERTEX_ARRAY);
-        //glEnable(GL_CULL_FACE);
+    public static void render(String text, Vector2f pos, Matrix4f ortho) {
+        render(text, new Vector3f(1f), pos, ortho);
     }
 
     private static final CharSequence vs =
-            "#version 330 core" +
-                    "layout (location = 0) in vec2 position;" +
-                    "uniform mat4 ortho" +
-                    "void main(){" +
-                    "gl_Position = ortho * vec4(position)" +
+            "uniform mat4 viewProjMatrix;" +
+                    "void main() {" +
+                    "  gl_Position = viewProjMatrix * gl_Vertex;" +
                     "}";
 
     private static final CharSequence fs =
-            "#version 330 core" +
-                    "out gl_Color" +
-                    "uniform vec3 color" +
+            "uniform vec3 color;" +
                     "void main() {" +
-                    "gl_Color = vec4(color, 1.0f);" +
+                    "  gl_FragColor = vec4(color, 1.0);" +
                     "}";
 
-    private static ShaderProgram shader;
-
-    static {
-        try {
-            shader = new ShaderProgram(vs, fs);
-        } catch (Exception e) {}
-    }
-
+    private static ShaderProgram shader = new ShaderProgram(vs, fs);
+    private static int matLocation = glGetUniformLocation(shader.id, "viewProjMatrix");;
+    private static int colorLocation = glGetUniformLocation(shader.id, "color");
 }

@@ -1,5 +1,7 @@
 package com.jcs.utils;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
@@ -22,7 +24,9 @@ public class IOUtils {
      * @return the resource data
      * @throws Exception if an error occurs
      */
-    public static ByteBuffer ioResourceToByteBuffer(String resource) throws Exception {
+    public static ByteBuffer ioResourceToByteBuffer(String resource) throws Exception
+
+    {
 
         ByteBuffer buffer;
         Path path = Paths.get(currentThread().getContextClassLoader().getResource(resource).toURI());
@@ -35,7 +39,7 @@ public class IOUtils {
             buffer.flip();
             return buffer;
         } else
-            throw new RuntimeException("could not load resource: " + resource);
+            throw new Exception("could not load resource: " + resource);
 
     }
 }

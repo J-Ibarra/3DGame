@@ -3,6 +3,7 @@ package com.jcs;
 import com.jcs.test.Font;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
@@ -133,10 +134,10 @@ public class Main {
         projection = new Matrix4f().setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
         ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
 
-        modelLoc = glGetUniformLocation(shader.programId, "model");
-        viewLoc = glGetUniformLocation(shader.programId, "view");
-        projLoc = glGetUniformLocation(shader.programId, "projection");
-        locOurTexture = glGetUniformLocation(shader.programId, "ourTexture");
+        modelLoc = glGetUniformLocation(shader.id, "model");
+        viewLoc = glGetUniformLocation(shader.id, "view");
+        projLoc = glGetUniformLocation(shader.id, "projection");
+        locOurTexture = glGetUniformLocation(shader.id, "ourTexture");
 
         config();
     }
@@ -176,6 +177,7 @@ public class Main {
                 Main.this.width = width;
                 Main.this.height = height;
                 projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
+                ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
                 glViewport(0, 0, width, height);
             }
         });
@@ -259,8 +261,14 @@ public class Main {
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(camera.getViewMatrix().get(fb));
         renderGrid();
-        Font.render(1.0f, new Vector3f(1f), new Vector3f(1f), ortho.get(fb));
-        Font.render(text, 1.0f, new Vector3f(1.0f), new Vector3f(1.0f, 10.0f, 0.0f), ortho.get(fb));
+
+
+        Font.render(text, new Vector2f(1f), ortho);
+        Font.render("xPos: " + camera.pos.x, new Vector2f(1, 10), ortho);
+        Font.render("yPos: " + camera.pos.y, new Vector2f(1, 20), ortho);
+        Font.render("zPos: " + camera.pos.z, new Vector2f(1, 30), ortho);
+        Font.render("xRot: " + camera.q.x, new Vector2f(1, 40), ortho);
+        Font.render("yRot: " + camera.q.y, new Vector2f(1, 50), ortho);
     }
 
     int dl = -1;
@@ -305,8 +313,9 @@ public class Main {
 
     private int i = 0;
     String text = "";
+
     private void oneSecond(int ups, int fps) {
-        text = ups + ", fps: " + fps;
+        text = "ups: " + ups + ", fps: " + fps;
 
         glfwSetWindowTitle(window, tittle + " || ups: " + ups + ", fps: " + fps);
         i++;
@@ -380,7 +389,7 @@ public class Main {
         int iHeight = 360;
 
         // Create the window
-        window = glfwCreateWindow(iWidth, iHeight, tittle, NULL, NULL);
+        window = glfwCreateWindow(iWidth, iHeight, tittle, monitor, NULL);
         if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -411,7 +420,6 @@ public class Main {
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GL.createCapabilities();
-
     }
 
     public void run() {

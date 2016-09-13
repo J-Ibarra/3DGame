@@ -14,14 +14,14 @@ import static org.lwjgl.opengl.GL20.*;
  * Created by Jcs on 18/8/2016.
  */
 public class ShaderProgram {
-    public final int programId;
-    private int vsId;
-    private int fsId;
+    public final int id;
+    public int vsId;
+    public int fsId;
 
-    public ShaderProgram() throws Exception {
-        programId = glCreateProgram();
-        if (programId == 0) {
-            throw new Exception("Could not create Shader");
+    public ShaderProgram() {
+        id = glCreateProgram();
+        if (id == 0) {
+            throw new RuntimeException("Could not create Shader");
         }
     }
 
@@ -32,7 +32,7 @@ public class ShaderProgram {
         link();
     }
 
-    public ShaderProgram(CharSequence vs, CharSequence fs) throws Exception {
+    public ShaderProgram(CharSequence vs, CharSequence fs) {
         this();
         createVertexShader(vs);
         createFragmentShader(fs);
@@ -41,42 +41,46 @@ public class ShaderProgram {
 
     public void createVertexShader(String path) throws Exception {
         vsId = createShader(path, GL_VERTEX_SHADER);
-        glAttachShader(programId, vsId);
+        glAttachShader(id, vsId);
     }
 
-    public void createVertexShader(CharSequence source) throws Exception {
+    public void createVertexShader(CharSequence source)  {
         vsId = createShader(source, GL_VERTEX_SHADER);
-        glAttachShader(programId, vsId);
+        glAttachShader(id, vsId);
     }
 
     public void createFragmentShader(String path) throws Exception {
         fsId = createShader(path, GL_FRAGMENT_SHADER);
-        glAttachShader(programId, fsId);
+        glAttachShader(id, fsId);
     }
 
-    public void createFragmentShader(CharSequence source) throws Exception {
+    public void createFragmentShader(CharSequence source) {
         fsId = createShader(source, GL_FRAGMENT_SHADER);
-        glAttachShader(programId, fsId);
+        glAttachShader(id, fsId);
     }
 
-    public void link() throws Exception {
+    public void link() {
         bind();
-        glLinkProgram(programId);
-        if (glGetProgrami(programId, GL_LINK_STATUS) == GL_FALSE) {
-            throw new RuntimeException("Error linking shader, log: " + glGetShaderInfoLog(vsId) + " " +
-                    glGetShaderInfoLog(fsId));
+        glLinkProgram(id);
+        if (glGetProgrami(id, GL_LINK_STATUS) == GL_FALSE) {
+            throw new RuntimeException("Error linking shader, log: vs: " + glGetShaderInfoLog(vsId) + ", fs: " +
+                    glGetShaderInfoLog(fsId) + ", shader: " + glGetShaderInfoLog(id));
         }
 
-        glValidateProgram(programId);
-        if (glGetProgrami(programId, GL_VALIDATE_STATUS) == GL_FALSE) {
-            throw new RuntimeException("Warning validating shader, log: " + glGetShaderInfoLog(vsId) + " " +
-                    glGetShaderInfoLog(fsId));
+        glValidateProgram(id);
+        if (glGetProgrami(id, GL_VALIDATE_STATUS) == GL_FALSE) {
+            throw new RuntimeException("Warning validating shader, log: vs:" + glGetShaderInfoLog(vsId) + ", fs:  " +
+                    glGetShaderInfoLog(fsId)+ ", shader: " + glGetShaderInfoLog(id));
         }
+
+        glDeleteShader(vsId);
+        glDeleteShader(fsId);
+
         unbind();
     }
 
     public void bind() {
-        glUseProgram(programId);
+        glUseProgram(id);
     }
 
     public void unbind() {
@@ -85,23 +89,23 @@ public class ShaderProgram {
 
     public void cleanUp() {
         unbind();
-        if (programId != 0) {
+        if (id != 0) {
             if (vsId != 0) {
-                glDetachShader(programId, vsId);
+                glDetachShader(id, vsId);
                 glDeleteShader(vsId);
             }
             if (fsId != 0) {
-                glDetachShader(programId, fsId);
+                glDetachShader(id, fsId);
                 glDeleteShader(fsId);
             }
-            glDeleteProgram(programId);
+            glDeleteProgram(id);
         }
     }
 
     public int createShader(String path, int shaderType) throws Exception {
         int shaderId = glCreateShader(shaderType);
         if (shaderId == 0) {
-            throw new Exception("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
+            throw new RuntimeException("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
         }
 
         ByteBuffer source = ioResourceToByteBuffer(path);
@@ -115,23 +119,23 @@ public class ShaderProgram {
         glCompileShader(shaderId);
 
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_FALSE) {
-            throw new Exception("Error compiling Shader code: " + glGetShaderInfoLog(shaderId));
+            throw new RuntimeException("Error compiling Shader code: " + glGetShaderInfoLog(shaderId));
         }
 
         return shaderId;
     }
 
-    protected int createShader(CharSequence source, int shaderType) throws Exception {
+    protected int createShader(CharSequence source, int shaderType) {
         int shaderId = glCreateShader(shaderType);
         if (shaderId == 0) {
-            throw new Exception("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
+            throw new RuntimeException("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
         }
 
         glShaderSource(shaderId, source);
         glCompileShader(shaderId);
 
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_FALSE) {
-            throw new Exception("Error compiling Shader code: " + glGetShaderInfoLog(shaderId));
+            throw new RuntimeException("Error compiling Shader code: " + glGetShaderInfoLog(shaderId));
         }
 
         return shaderId;
