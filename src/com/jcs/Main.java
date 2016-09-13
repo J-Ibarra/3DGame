@@ -259,9 +259,8 @@ public class Main {
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(camera.getViewMatrix().get(fb));
         renderGrid();
-
-
         Font.render(1.0f, new Vector3f(1f), new Vector3f(1f), ortho.get(fb));
+        Font.render(text, 1.0f, new Vector3f(1.0f), new Vector3f(1.0f, 10.0f, 0.0f), ortho.get(fb));
     }
 
     int dl = -1;
@@ -305,8 +304,10 @@ public class Main {
     }
 
     private int i = 0;
-
+    String text = "";
     private void oneSecond(int ups, int fps) {
+        text = ups + ", fps: " + fps;
+
         glfwSetWindowTitle(window, tittle + " || ups: " + ups + ", fps: " + fps);
         i++;
         if (i % 5 == 0) {

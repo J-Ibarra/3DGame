@@ -26,10 +26,14 @@ public class ShaderProgram {
     }
 
     public ShaderProgram(String vs, String fs) throws Exception {
-        programId = glCreateProgram();
-        if (programId == 0) {
-            throw new Exception("Could not create Shader");
-        }
+        this();
+        createVertexShader(vs);
+        createFragmentShader(fs);
+        link();
+    }
+
+    public ShaderProgram(CharSequence vs, CharSequence fs) throws Exception {
+        this();
         createVertexShader(vs);
         createFragmentShader(fs);
         link();
@@ -40,8 +44,18 @@ public class ShaderProgram {
         glAttachShader(programId, vsId);
     }
 
+    public void createVertexShader(CharSequence source) throws Exception {
+        vsId = createShader(source, GL_VERTEX_SHADER);
+        glAttachShader(programId, vsId);
+    }
+
     public void createFragmentShader(String path) throws Exception {
         fsId = createShader(path, GL_FRAGMENT_SHADER);
+        glAttachShader(programId, fsId);
+    }
+
+    public void createFragmentShader(CharSequence source) throws Exception {
+        fsId = createShader(source, GL_FRAGMENT_SHADER);
         glAttachShader(programId, fsId);
     }
 
@@ -84,7 +98,7 @@ public class ShaderProgram {
         }
     }
 
-    protected int createShader(String path, int shaderType) throws Exception {
+    public int createShader(String path, int shaderType) throws Exception {
         int shaderId = glCreateShader(shaderType);
         if (shaderId == 0) {
             throw new Exception("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
@@ -98,6 +112,22 @@ public class ShaderProgram {
         lengths.put(0, source.remaining());
 
         glShaderSource(shaderId, strings, lengths);
+        glCompileShader(shaderId);
+
+        if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_FALSE) {
+            throw new Exception("Error compiling Shader code: " + glGetShaderInfoLog(shaderId));
+        }
+
+        return shaderId;
+    }
+
+    protected int createShader(CharSequence source, int shaderType) throws Exception {
+        int shaderId = glCreateShader(shaderType);
+        if (shaderId == 0) {
+            throw new Exception("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
+        }
+
+        glShaderSource(shaderId, source);
         glCompileShader(shaderId);
 
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == GL_FALSE) {
