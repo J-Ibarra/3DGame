@@ -55,8 +55,99 @@ public class Main {
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
 
+        float[] vertices = new float[]{
+                -0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, 0.5f, -0.5f,
+                0.5f, 0.5f, -0.5f,
+                -0.5f, 0.5f, -0.5f,
+                -0.5f, -0.5f, -0.5f,
 
-        mesh = new Mesh();
+                -0.5f, -0.5f, 0.5f,
+                0.5f, -0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, 0.5f,
+                -0.5f, -0.5f, 0.5f,
+
+                -0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, -0.5f,
+                -0.5f, -0.5f, -0.5f,
+                -0.5f, -0.5f, -0.5f,
+                -0.5f, -0.5f, 0.5f,
+                -0.5f, 0.5f, 0.5f,
+
+                0.5f, 0.5f, 0.5f,
+                0.5f, 0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+
+                -0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, 0.5f,
+                0.5f, -0.5f, 0.5f,
+                -0.5f, -0.5f, 0.5f,
+                -0.5f, -0.5f, -0.5f,
+
+                -0.5f, 0.5f, -0.5f,
+                0.5f, 0.5f, -0.5f,
+                0.5f, 0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, -0.5f,
+        };
+
+        float[] textureCoord = new float[]{
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+
+                0.0f, 1.0f,
+                1.0f, 1.0f,
+                1.0f, 0.0f,
+                1.0f, 0.0f,
+                0.0f, 0.0f,
+                0.0f, 1.0f,
+
+                0.0f, 1.0f,
+                1.0f, 1.0f,
+                1.0f, 0.0f,
+                1.0f, 0.0f,
+                0.0f, 0.0f,
+                0.0f, 1.0f
+        };
+
+        Mesh.Data vert = new Mesh.Data(vertices, 0, 3, GL_FLOAT);
+        Mesh.Data text = new Mesh.Data(textureCoord, 2, 2, GL_FLOAT);
+        Mesh.Data[] data = new Mesh.Data[]{vert, text};
+
+        mesh = new Mesh(data);
         texture = Texture.createClassTexture("test/texture.jpg");
 
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
@@ -160,7 +251,7 @@ public class Main {
         glUniformMatrix4fv(projLoc, false, projection.get(fb));
         glUniformMatrix4fv(viewLoc, false, camera.getViewMatrix().get(fb));
         glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 0.0f, -3.0f).rotate(q).get(fb));
-        glUniform1i(locOurTexture, 0);
+        glUniform1i(locOurTexture, 1);
         shader.unbind();
     }
 
@@ -176,13 +267,11 @@ public class Main {
 
     private void render() {
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-        texture.bind(0);
+        texture.bind(1);
 
         shader.bind();
         mesh.draw();
         shader.unbind();
-
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         glMatrixMode(GL_PROJECTION);
         glLoadMatrixf(projection.get(fb));
@@ -247,9 +336,8 @@ public class Main {
 
         glfwSetWindowTitle(window, tittle + " || ups: " + ups + ", fps: " + fps);
         i++;
-        if (i % 5 == 0) {
+        if (i % 5 == 0)
             vec = new Vector3f(r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1);
-        }
     }
 
     private void loop() {
