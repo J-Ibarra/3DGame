@@ -22,20 +22,14 @@ public class Texture {
     public int width = -1;
     public int height = -1;
 
-    public Texture(int id, int width, int height) {
-        this.id = id;
-        this.width = width;
-        this.height = height;
-    }
-
-    public Texture(int[] data) {
+    private Texture(int[] data) {
         this.id = data[0];
         this.width = data[1];
         this.height = data[2];
     }
 
-    public final static int[] createTexture(String path) {
-        ByteBuffer imageBuffer = ioResourceToByteBuffer(path);
+    public static int[] createTexture(String resource) {
+        ByteBuffer imageBuffer = ioResourceToByteBuffer(resource);
 
         IntBuffer w = BufferUtils.createIntBuffer(1);
         IntBuffer h = BufferUtils.createIntBuffer(1);
@@ -85,16 +79,15 @@ public class Texture {
         return new int[]{texID, width, height};
     }
 
-    public final static Texture createClassTexture(String path) {
-        return new Texture(createTexture(path));
+    public static Texture createClassTexture(String resource) {
+        return new Texture(createTexture(resource));
     }
 
     public void bind(int sampler) {
         if (sampler >= 0 && sampler <= 31) {
             glActiveTexture(GL_TEXTURE0 + sampler);
             glBindTexture(GL_TEXTURE_2D, id);
-        } else {
+        } else
             throw new RuntimeException("Class: Texture;\n\t\t Could not activate sampler: [" + sampler + "]");
-        }
     }
 }

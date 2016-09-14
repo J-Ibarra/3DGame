@@ -1,6 +1,4 @@
-.idea
-out
-*.iml
-hs_err_pid*
-/src/com/jcs/test/WavefrontMeshLoader.java
-/src/com/jcs/test/testZip.java
+/.idea/
+/out/
+/*.iml
+/hs_err_pid*
