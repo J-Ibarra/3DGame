@@ -1,6 +1,5 @@
 package com.jcs;
 
-import com.jcs.test.Font;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -16,12 +15,10 @@ import java.util.Random;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
+
 
 public class Main {
 
@@ -41,12 +38,11 @@ public class Main {
     private GLFWWindowCloseCallback windowCloseCallback;
     private GLFWFramebufferSizeCallback framebufferSizeCallback;
 
-
     private ShaderProgram shader;
 
     private Camera camera;
 
-    int VAO;
+    Mesh mesh;
     Texture texture;
 
     Matrix4f model;
@@ -54,79 +50,13 @@ public class Main {
     Matrix4f projection;
     Matrix4f ortho;
 
-    private void init() throws Exception {
+    private void init() {
         camera = new Camera();
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
 
-        float[] vertices = new float[]{
-                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-                0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 
-                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-                0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-                -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
-                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-
-                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-                -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-                -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-                0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-                0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
-                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-                0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-                -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-                -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
-                0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-                0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-                -0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
-                -0.5f, 0.5f, -0.5f, 0.0f, 1.0f
-        };
-
-        int floatByteSize = 4;
-        int positionFloatCount = 3;
-        int textureFloatCount = 2;
-        int floatsPerVertex = positionFloatCount + textureFloatCount;
-        int vertexFloatSizeInBytes = floatByteSize * floatsPerVertex;
-
-        VAO = glGenVertexArrays();
-        glBindVertexArray(VAO);
-
-        int VBO = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        FloatBuffer fb = BufferUtils.createFloatBuffer(vertices.length);
-        fb.put(vertices).flip();
-        glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, vertexFloatSizeInBytes, 0);
-        glEnableVertexAttribArray(0);
-
-        int byteOffset = floatByteSize * positionFloatCount;
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, vertexFloatSizeInBytes, byteOffset);
-        glEnableVertexAttribArray(2);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
-
+        mesh = new Mesh();
         texture = Texture.createClassTexture("test/texture.jpg");
 
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
@@ -147,7 +77,7 @@ public class Main {
         glEnable(GL_DEPTH_TEST);
     }
 
-    private void initCallbacks() throws Exception {
+    private void initCallbacks() {
 
         glfwSetWindowCloseCallback(window, windowCloseCallback = new GLFWWindowCloseCallback() {
             @Override
@@ -249,9 +179,7 @@ public class Main {
         texture.bind(0);
 
         shader.bind();
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
+        mesh.draw();
         shader.unbind();
 
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -389,7 +317,7 @@ public class Main {
         int iHeight = 360;
 
         // Create the window
-        window = glfwCreateWindow(iWidth, iHeight, tittle, monitor, NULL);
+        window = glfwCreateWindow(iWidth, iHeight, tittle, NULL, NULL);
         if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -438,8 +366,6 @@ public class Main {
             //glfwFreeCallbacks(window);
             glfwDestroyWindow(window);
 
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             // Terminate GLFW and free the error callback
             glfwTerminate();

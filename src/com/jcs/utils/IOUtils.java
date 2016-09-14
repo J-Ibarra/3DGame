@@ -20,26 +20,25 @@ public class IOUtils {
     /**
      * Reads the specified resource and returns the raw data as a ByteBuffer.
      *
-     * @param resource   the resource to read
+     * @param resource the resource to read
      * @return the resource data
-     * @throws Exception if an error occurs
      */
-    public static ByteBuffer ioResourceToByteBuffer(String resource) throws Exception
-
-    {
-
+    public static ByteBuffer ioResourceToByteBuffer(String resource) {
         ByteBuffer buffer;
-        Path path = Paths.get(currentThread().getContextClassLoader().getResource(resource).toURI());
-        if (isReadable(path)) {
-            SeekableByteChannel fc = newByteChannel(path);
-            buffer = createByteBuffer((int) fc.size() + 1);
+        try {
+            Path path = Paths.get(currentThread().getContextClassLoader().getResource(resource).toURI());
+            if (isReadable(path)) {
+                SeekableByteChannel fc = newByteChannel(path);
+                buffer = createByteBuffer((int) fc.size() + 1);
 
-            while (fc.read(buffer) != -1) ;
+                while (fc.read(buffer) != -1) ;
 
-            buffer.flip();
-            return buffer;
-        } else
-            throw new Exception("could not load resource: " + resource);
-
+                buffer.flip();
+                return buffer;
+            } else
+                throw new Exception("could not load resource: " + resource);
+        } catch (Exception e) {
+            throw new RuntimeException("could not load resource: " + resource);
+        }
     }
 }

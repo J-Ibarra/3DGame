@@ -20,12 +20,12 @@ public class ShaderProgram {
 
     public ShaderProgram() {
         id = glCreateProgram();
-        if (id == 0) {
+        if (id < 1) {
             throw new RuntimeException("Could not create Shader");
         }
     }
 
-    public ShaderProgram(String vs, String fs) throws Exception {
+    public ShaderProgram(String vs, String fs) {
         this();
         createVertexShader(vs);
         createFragmentShader(fs);
@@ -39,17 +39,17 @@ public class ShaderProgram {
         link();
     }
 
-    public void createVertexShader(String path) throws Exception {
+    public void createVertexShader(String path) {
         vsId = createShader(path, GL_VERTEX_SHADER);
         glAttachShader(id, vsId);
     }
 
-    public void createVertexShader(CharSequence source)  {
+    public void createVertexShader(CharSequence source) {
         vsId = createShader(source, GL_VERTEX_SHADER);
         glAttachShader(id, vsId);
     }
 
-    public void createFragmentShader(String path) throws Exception {
+    public void createFragmentShader(String path) {
         fsId = createShader(path, GL_FRAGMENT_SHADER);
         glAttachShader(id, fsId);
     }
@@ -70,7 +70,7 @@ public class ShaderProgram {
         glValidateProgram(id);
         if (glGetProgrami(id, GL_VALIDATE_STATUS) == GL_FALSE) {
             throw new RuntimeException("Warning validating shader, log: vs:" + glGetShaderInfoLog(vsId) + ", fs:  " +
-                    glGetShaderInfoLog(fsId)+ ", shader: " + glGetShaderInfoLog(id));
+                    glGetShaderInfoLog(fsId) + ", shader: " + glGetShaderInfoLog(id));
         }
 
         glDeleteShader(vsId);
@@ -102,13 +102,16 @@ public class ShaderProgram {
         }
     }
 
-    public int createShader(String path, int shaderType) throws Exception {
+    public int createShader(String path, int shaderType) {
         int shaderId = glCreateShader(shaderType);
-        if (shaderId == 0) {
+        if (shaderId < 1) {
             throw new RuntimeException("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
         }
+        ByteBuffer source;
 
-        ByteBuffer source = ioResourceToByteBuffer(path);
+        source = ioResourceToByteBuffer(path);
+
+
         PointerBuffer strings = BufferUtils.createPointerBuffer(1);
         IntBuffer lengths = BufferUtils.createIntBuffer(1);
 

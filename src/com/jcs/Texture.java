@@ -28,58 +28,13 @@ public class Texture {
         this.height = height;
     }
 
-    public final static int createTexture(String path) throws Exception {
-        ByteBuffer imageBuffer = ioResourceToByteBuffer(path);
-
-        IntBuffer w = BufferUtils.createIntBuffer(1);
-        IntBuffer h = BufferUtils.createIntBuffer(1);
-        IntBuffer comp = BufferUtils.createIntBuffer(1);
-
-        // Use info to read image metadata without decoding the entire image.
-        // We don't need this for this demo, just testing the API.
-        if ( !stbi_info_from_memory(imageBuffer, w, h, comp) )
-            throw new RuntimeException("Failed to read image information: " + stbi_failure_reason());
-
-        // Decode the image
-        ByteBuffer image;
-        image = stbi_load_from_memory(imageBuffer, w, h, comp, 0);
-        if ( image == null )
-            throw new RuntimeException("Failed to load image: " + stbi_failure_reason());
-
-        int width = w.get(0);
-        int height = h.get(0);
-        int com = comp.get(0);
-
-        int texID = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texID);
-
-        if ( com == 3 ) {
-            if ( (width & 3) != 0 )
-                glPixelStorei(GL_UNPACK_ALIGNMENT, 2 - (width & 1));
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-        } else {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-
-        // Set texture filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-
-        glEnable(GL_TEXTURE_2D);
-
-
-        stbi_image_free(image);
-
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        return texID;
+    public Texture(int[] data) {
+        this.id = data[0];
+        this.width = data[1];
+        this.height = data[2];
     }
 
-    public final static Texture createClassTexture(String path) throws Exception {
+    public final static int[] createTexture(String path) {
         ByteBuffer imageBuffer = ioResourceToByteBuffer(path);
 
         IntBuffer w = BufferUtils.createIntBuffer(1);
@@ -88,13 +43,13 @@ public class Texture {
 
         // Use info to read image metadata without decoding the entire image.
         // We don't need this for this demo, just testing the API.
-        if ( !stbi_info_from_memory(imageBuffer, w, h, comp) )
+        if (!stbi_info_from_memory(imageBuffer, w, h, comp))
             throw new RuntimeException("Failed to read image information: " + stbi_failure_reason());
 
         // Decode the image
         ByteBuffer image;
         image = stbi_load_from_memory(imageBuffer, w, h, comp, 0);
-        if ( image == null )
+        if (image == null)
             throw new RuntimeException("Failed to load image: " + stbi_failure_reason());
 
         int width = w.get(0);
@@ -104,8 +59,8 @@ public class Texture {
         int texID = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, texID);
 
-        if ( com == 3 ) {
-            if ( (width & 3) != 0 )
+        if (com == 3) {
+            if ((width & 3) != 0)
                 glPixelStorei(GL_UNPACK_ALIGNMENT, 2 - (width & 1));
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
         } else {
@@ -127,7 +82,11 @@ public class Texture {
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
-        return new Texture(texID, width, height);
+        return new int[]{texID, width, height};
+    }
+
+    public final static Texture createClassTexture(String path) {
+        return new Texture(createTexture(path));
     }
 
     public void bind(int sampler) {
@@ -135,7 +94,7 @@ public class Texture {
             glActiveTexture(GL_TEXTURE0 + sampler);
             glBindTexture(GL_TEXTURE_2D, id);
         } else {
-            new RuntimeException("Could not activate sampler: ["+ sampler + "] texture");
+            throw new RuntimeException("Class: Texture;\n\t\t Could not activate sampler: [" + sampler + "]");
         }
     }
 }

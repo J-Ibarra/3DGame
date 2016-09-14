@@ -1,4 +1,4 @@
-package com.jcs.test;
+package com.jcs;
 
 import com.jcs.ShaderProgram;
 import org.joml.Matrix4f;
