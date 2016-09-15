@@ -10,7 +10,6 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
@@ -45,9 +44,16 @@ public class Main {
 
     private Camera camera;
 
-    Mesh mesh;
+    private Mesh mesh0;
+    private Mesh mesh1;
+    private Mesh mesh2;
+    private Mesh mesh3;
 
-    Texture texture;
+    private Mesh mesh4;
+
+    Texture texture0;
+    Texture texture1;
+    Texture texture2;
 
     Matrix4f model;
     Matrix4f view;
@@ -58,7 +64,134 @@ public class Main {
         camera = new Camera();
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
+        modelLoc = glGetUniformLocation(shader.id, "model");
+        viewLoc = glGetUniformLocation(shader.id, "view");
+        projLoc = glGetUniformLocation(shader.id, "projection");
+        locOurTexture = glGetUniformLocation(shader.id, "ourTexture");
 
+        initMesh0();
+        initMesh1();
+        initMesh2();
+        initMesh3();
+        mesh4 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"));
+
+        texture0 = Texture.createClassTexture("test/texture.jpg");
+        texture1 = Texture.createClassTexture("test/grassblock.png");
+        texture2 = Texture.createClassTexture("test/stallTexture.png");
+
+        model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
+        view = new Matrix4f();
+        projection = new Matrix4f().setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
+        ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
+
+        config();
+    }
+
+    private void config() {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glEnable(GL_DEPTH_TEST);
+    }
+
+    private void initMesh0() {
+        mesh0 = new Mesh();
+    }
+
+    private void initMesh1() {
+        float[] vertices = new float[]{
+                -0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, 0.5f, -0.5f,
+                0.5f, 0.5f, -0.5f,
+                -0.5f, 0.5f, -0.5f,
+                -0.5f, -0.5f, -0.5f,
+
+                -0.5f, -0.5f, 0.5f,
+                0.5f, -0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, 0.5f,
+                -0.5f, -0.5f, 0.5f,
+
+                -0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, -0.5f,
+                -0.5f, -0.5f, -0.5f,
+                -0.5f, -0.5f, -0.5f,
+                -0.5f, -0.5f, 0.5f,
+                -0.5f, 0.5f, 0.5f,
+
+                0.5f, 0.5f, 0.5f,
+                0.5f, 0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+
+                -0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, -0.5f,
+                0.5f, -0.5f, 0.5f,
+                0.5f, -0.5f, 0.5f,
+                -0.5f, -0.5f, 0.5f,
+                -0.5f, -0.5f, -0.5f,
+
+                -0.5f, 0.5f, -0.5f,
+                0.5f, 0.5f, -0.5f,
+                0.5f, 0.5f, 0.5f,
+                0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, 0.5f,
+                -0.5f, 0.5f, -0.5f,
+        };
+
+        float[] texture = new float[]{
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+
+                1.0f, 0.0f,
+                1.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 1.0f,
+                0.0f, 0.0f,
+                1.0f, 0.0f,
+
+                0.0f, 1.0f,
+                1.0f, 1.0f,
+                1.0f, 0.0f,
+                1.0f, 0.0f,
+                0.0f, 0.0f,
+                0.0f, 1.0f,
+
+                0.0f, 1.0f,
+                1.0f, 1.0f,
+                1.0f, 0.0f,
+                1.0f, 0.0f,
+                0.0f, 0.0f,
+                0.0f, 1.0f
+        };
+
+        Data v = new Data(0, 3, vertices);
+        Data t = new Data(1, 2, texture);
+        mesh1 = new Mesh(new Data[]{v, t});
+
+    }
+
+    private void initMesh2() {
         float[] positions = new float[]{
                 // V0
                 -0.5f, 0.5f, 0.5f,
@@ -143,35 +276,15 @@ public class Main {
                 // Back face
                 4, 6, 7, 5, 4, 7,};
 
-        FloatBuffer aux = BufferUtils.createFloatBuffer(positions.length);
-        aux.put(positions).flip();
-        Data vert = new Data(0, 3, GL_FLOAT, aux);
-        aux = BufferUtils.createFloatBuffer(textCoords.length);
-        aux.put(textCoords).flip();
-        Data text = new Data(1, 2, GL_FLOAT, aux);
-
+        Data vert = new Data(0, 3, positions);
+        Data text = new Data(1, 2, textCoords);
         Mesh.Data[] data = new Mesh.Data[]{vert, text};
-        mesh = new Mesh(data, indices);
-        //mesh2= new Mesh(data, indices);
 
-        texture = Texture.createClassTexture("test/grassblock.png");
-
-        model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
-        view = new Matrix4f();
-        projection = new Matrix4f().setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
-        ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
-
-        modelLoc = glGetUniformLocation(shader.id, "model");
-        viewLoc = glGetUniformLocation(shader.id, "view");
-        projLoc = glGetUniformLocation(shader.id, "projection");
-        locOurTexture = glGetUniformLocation(shader.id, "ourTexture");
-
-        config();
+        mesh2 = new Mesh(data, indices);
     }
 
-    private void config() {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        glEnable(GL_DEPTH_TEST);
+    private void initMesh3() {
+        mesh3 = new Mesh(OBJLoader.loadOBJ("test/untitled.obj"));
     }
 
     private void initCallbacks() {
@@ -256,8 +369,7 @@ public class Main {
         shader.bind();
         glUniformMatrix4fv(projLoc, false, projection.get(fb));
         glUniformMatrix4fv(viewLoc, false, camera.getViewMatrix().get(fb));
-        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 0.0f, -3.0f).rotate(q).get(fb));
-        glUniform1i(locOurTexture, 1);
+        glUniform1i(locOurTexture, 0);
         shader.unbind();
     }
 
@@ -273,12 +385,26 @@ public class Main {
 
     private void render() {
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-        texture.bind(1);
-
         shader.bind();
-        mesh.draw();
-        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 1.5f, -4.0f).rotate(q).get(fb));
 
+        texture0.bind(0);
+        glUniformMatrix4fv(modelLoc, false, model.identity().translate(-4.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        mesh0.draw();
+
+        glUniformMatrix4fv(modelLoc, false, model.identity().translate(-2.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        mesh1.draw();
+
+        texture1.bind(0);
+        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        mesh2.draw();
+
+        glUniformMatrix4fv(modelLoc, false, model.identity().translate(2.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        mesh3.draw();
+
+        texture2.bind(0);
+        Quaternionf qq = new Quaternionf().rotate(0,(float)Math.toRadians(180),0);
+        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
+        mesh4.draw();
 
         shader.unbind();
 
@@ -288,60 +414,12 @@ public class Main {
         glLoadMatrixf(camera.getViewMatrix().get(fb));
         renderGrid();
 
-        glMatrixMode(GL_PROJECTION);
-        glLoadMatrixf(projection.get(fb));
-        glMatrixMode(GL_MODELVIEW);
-        glLoadMatrixf(camera.getViewMatrix().get(fb));
-        renderModel();
-
-
         Font.render(text, new Vector2f(1f), ortho);
         Font.render("xPos: " + camera.pos.x, new Vector2f(1, 10), ortho);
         Font.render("yPos: " + camera.pos.y, new Vector2f(1, 20), ortho);
         Font.render("zPos: " + camera.pos.z, new Vector2f(1, 30), ortho);
         Font.render("xRot: " + camera.q.x, new Vector2f(1, 40), ortho);
         Font.render("yRot: " + camera.q.y, new Vector2f(1, 50), ortho);
-    }
-
-    private int ml = -1;
-
-    private void renderModel() {
-        if (ml == -1) {
-            OBJLoader.Model m = OBJLoader.loadOBJ("test/untitled.obj");
-            ml = glGenLists(1);
-            glNewList(ml, GL_COMPILE);
-            glBegin(GL_TRIANGLES);
-            glColor3f(1f, 1f, 1f);
-            for (OBJLoader.Face face : m.f) {
-
-                Vector3f n1 = m.n.get(face.n.x);
-                glNormal3f(n1.x, n1.y, n1.z);
-                Vector3f v1 = m.v.get(face.v.x);
-                glVertex3f(v1.x, v1.y, v1.z);
-                Vector2f t1 = m.t.get(face.t.x);
-                glTexCoord2f(t1.x, t1.y);
-
-                Vector3f n2 = m.n.get(face.n.y);
-                glNormal3f(n2.x, n2.y, n2.z);
-                Vector3f v2 = m.v.get(face.v.y);
-                glVertex3f(v2.x, v2.y, v2.z);
-                Vector2f t2 = m.t.get(face.t.y);
-                glTexCoord2f(t2.x, t2.y);
-
-                Vector3f n3 = m.n.get(face.n.z);
-                glNormal3f(n3.x, n3.y, n3.z);
-                Vector3f v3 = m.v.get(face.v.z);
-                glVertex3f(v3.x, v3.y, v3.z);
-                Vector2f t3 = m.t.get(face.t.z);
-                glTexCoord2f(t3.x, t3.y);
-            }
-
-            glEnd();
-            glEndList();
-        }
-        //Texture.unbind();
-        texture.bind(0);
-        glCallList(ml);
     }
 
     private int dl = -1;
@@ -377,7 +455,7 @@ public class Main {
 
     private void finish() {
         shader.cleanUp();
-        mesh.cleanUp();
+        mesh2.cleanUp();
 
         /* <-- --> */
         keyCallback.free();
