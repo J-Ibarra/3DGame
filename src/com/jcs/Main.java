@@ -1,5 +1,6 @@
 package com.jcs;
 
+import com.jcs.test.OBJLoader;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -9,6 +10,7 @@ import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
@@ -44,6 +46,7 @@ public class Main {
     private Camera camera;
 
     Mesh mesh;
+
     Texture texture;
 
     Matrix4f model;
@@ -140,12 +143,16 @@ public class Main {
                 // Back face
                 4, 6, 7, 5, 4, 7,};
 
-        Data vert = new Data(0, 3, GL_FLOAT, positions);
-        Data colr = new Data(2, 2, GL_FLOAT, textCoords);
+        FloatBuffer aux = BufferUtils.createFloatBuffer(positions.length);
+        aux.put(positions).flip();
+        Data vert = new Data(0, 3, GL_FLOAT, aux);
+        aux = BufferUtils.createFloatBuffer(textCoords.length);
+        aux.put(textCoords).flip();
+        Data text = new Data(1, 2, GL_FLOAT, aux);
 
-        Mesh.Data[] data = new Mesh.Data[]{vert, colr};
-
+        Mesh.Data[] data = new Mesh.Data[]{vert, text};
         mesh = new Mesh(data, indices);
+        //mesh2= new Mesh(data, indices);
 
         texture = Texture.createClassTexture("test/grassblock.png");
 
@@ -270,6 +277,9 @@ public class Main {
 
         shader.bind();
         mesh.draw();
+        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 1.5f, -4.0f).rotate(q).get(fb));
+
+
         shader.unbind();
 
         glMatrixMode(GL_PROJECTION);
@@ -277,6 +287,12 @@ public class Main {
         glMatrixMode(GL_MODELVIEW);
         glLoadMatrixf(camera.getViewMatrix().get(fb));
         renderGrid();
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadMatrixf(projection.get(fb));
+        glMatrixMode(GL_MODELVIEW);
+        glLoadMatrixf(camera.getViewMatrix().get(fb));
+        renderModel();
 
 
         Font.render(text, new Vector2f(1f), ortho);
@@ -287,6 +303,47 @@ public class Main {
         Font.render("yRot: " + camera.q.y, new Vector2f(1, 50), ortho);
     }
 
+    private int ml = -1;
+
+    private void renderModel() {
+        if (ml == -1) {
+            OBJLoader.Model m = OBJLoader.loadOBJ("test/untitled.obj");
+            ml = glGenLists(1);
+            glNewList(ml, GL_COMPILE);
+            glBegin(GL_TRIANGLES);
+            glColor3f(1f, 1f, 1f);
+            for (OBJLoader.Face face : m.f) {
+
+                Vector3f n1 = m.n.get(face.n.x);
+                glNormal3f(n1.x, n1.y, n1.z);
+                Vector3f v1 = m.v.get(face.v.x);
+                glVertex3f(v1.x, v1.y, v1.z);
+                Vector2f t1 = m.t.get(face.t.x);
+                glTexCoord2f(t1.x, t1.y);
+
+                Vector3f n2 = m.n.get(face.n.y);
+                glNormal3f(n2.x, n2.y, n2.z);
+                Vector3f v2 = m.v.get(face.v.y);
+                glVertex3f(v2.x, v2.y, v2.z);
+                Vector2f t2 = m.t.get(face.t.y);
+                glTexCoord2f(t2.x, t2.y);
+
+                Vector3f n3 = m.n.get(face.n.z);
+                glNormal3f(n3.x, n3.y, n3.z);
+                Vector3f v3 = m.v.get(face.v.z);
+                glVertex3f(v3.x, v3.y, v3.z);
+                Vector2f t3 = m.t.get(face.t.z);
+                glTexCoord2f(t3.x, t3.y);
+            }
+
+            glEnd();
+            glEndList();
+        }
+        //Texture.unbind();
+        texture.bind(0);
+        glCallList(ml);
+    }
+
     private int dl = -1;
 
     private void renderGrid() {
@@ -294,7 +351,7 @@ public class Main {
             dl = glGenLists(1);
             glNewList(dl, GL_COMPILE);
             glBegin(GL_LINES);
-            glColor3f(0.2f, 0.2f, 0.2f);
+            glColor3f(0f, 0f, 1f);
 
             int gridSize = 40;
             float ceiling = 3.0f;
@@ -305,7 +362,7 @@ public class Main {
                 glVertex3f(i, 0.0f, -gridSize);
                 glVertex3f(i, 0.0f, gridSize);
             }
-            glColor3f(0.5f, 0.5f, 0.5f);
+            glColor3f(1f, 1f, 0f);
             for (int i = -gridSize; i <= gridSize; i++) {
                 glVertex3f(-gridSize, ceiling, i);
                 glVertex3f(gridSize, ceiling, i);
@@ -319,12 +376,15 @@ public class Main {
     }
 
     private void finish() {
+        shader.cleanUp();
+        mesh.cleanUp();
+
+        /* <-- --> */
         keyCallback.free();
         cursorPosCallback.free();
         scrollCallback.free();
         windowCloseCallback.free();
         framebufferSizeCallback.free();
-        shader.cleanUp();
     }
 
     private int i = 0;

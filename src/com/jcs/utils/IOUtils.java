@@ -1,6 +1,6 @@
 package com.jcs.utils;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
@@ -33,6 +33,7 @@ public class IOUtils {
 
                 while (fc.read(buffer) != -1) ;
 
+                fc.close();
                 buffer.flip();
                 return buffer;
             } else
@@ -40,5 +41,17 @@ public class IOUtils {
         } catch (Exception e) {
             throw new RuntimeException("could not load resource: " + resource);
         }
+    }
+
+    public static byte[] ioResourceToByteArray(String resource) {
+        ByteBuffer data = ioResourceToByteBuffer(resource);
+        byte[] arr = new byte[data.remaining()];
+        data.get(arr);
+        return arr;
+    }
+
+    public static BufferedReader ioResourceToBufferedReader(String resource) {
+        byte[] arr = ioResourceToByteArray(resource);
+        return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(arr)));
     }
 }

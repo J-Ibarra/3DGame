@@ -68,9 +68,6 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-        glEnable(GL_TEXTURE_2D);
-
-
         stbi_image_free(image);
 
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -85,9 +82,15 @@ public class Texture {
 
     public void bind(int sampler) {
         if (sampler >= 0 && sampler <= 31) {
+            glEnable(GL_TEXTURE_2D);
             glActiveTexture(GL_TEXTURE0 + sampler);
             glBindTexture(GL_TEXTURE_2D, id);
         } else
             throw new RuntimeException("Class: Texture;\n\t\t Could not activate sampler: [" + sampler + "]");
+    }
+
+    public static void unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+        glDisable(GL_TEXTURE_2D);
     }
 }

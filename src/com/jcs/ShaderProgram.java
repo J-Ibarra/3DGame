@@ -111,10 +111,7 @@ public class ShaderProgram {
         if (shaderId < 1) {
             throw new RuntimeException("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
         }
-        ByteBuffer source;
-
-        source = ioResourceToByteBuffer(resource);
-
+        ByteBuffer source = ioResourceToByteBuffer(resource);
 
         PointerBuffer strings = BufferUtils.createPointerBuffer(1);
         IntBuffer lengths = BufferUtils.createIntBuffer(1);

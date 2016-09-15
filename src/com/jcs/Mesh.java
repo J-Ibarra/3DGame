@@ -102,17 +102,16 @@ public class Mesh {
 
         for (int i = 0; i < data.length; i++) {
             Data d = data[i];
-            FloatBuffer fb = BufferUtils.createFloatBuffer(d.data.length);
-            fb.put(d.data).flip();
+
             int vbo = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
             vbos[i] = vbo;
 
-            glBufferData(GL_ARRAY_BUFFER, fb, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, d.data, GL_STATIC_DRAW);
             glVertexAttribPointer(d.index, d.size, d.type, false, 0, 0);
             glEnableVertexAttribArray(d.index);
         }
-        nDraw = data[0].data.length / 3;
+        nDraw = data[0].data.remaining() / 3;
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
     }
@@ -147,17 +146,18 @@ public class Mesh {
     }
 
     public static class Data {
-        public float[] data;
+        public FloatBuffer data;
         public int index;
         public int size;
         public int type;
 
-        public Data(int index, int size, int type, float[] data) {
+        public Data(int index, int size, int type, FloatBuffer data) {
             this.data = data;
             this.index = index;
             this.size = size;
             this.type = type;
         }
+
     }
 }
 
