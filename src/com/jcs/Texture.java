@@ -5,6 +5,8 @@ import org.lwjgl.BufferUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.jcs.utils.IOUtils.ioResourceToByteBuffer;
 import static org.lwjgl.opengl.GL11.*;
@@ -21,6 +23,8 @@ public class Texture {
     public int id = -1;
     public int width = -1;
     public int height = -1;
+
+    private static List<Texture> textures = new ArrayList<>();
 
     private Texture(int[] data) {
         this.id = data[0];
@@ -89,8 +93,19 @@ public class Texture {
             throw new RuntimeException("Class: Texture;\n\t\t Could not activate sampler: [" + sampler + "]");
     }
 
-    public static void unbind() {
-        glBindTexture(GL_TEXTURE_2D, 0);
-        glDisable(GL_TEXTURE_2D);
+    public static void cleanUp(){
+        while (!textures.isEmpty()) {
+            deleteTexture(textures.get(0));
+        }
+    }
+
+    public static Texture deleteTexture(Texture texture){
+        glDeleteTextures(texture.id);
+        textures.remove(texture);
+        texture.id = -1;
+        texture.width = -1;
+        texture.height = -1;
+        texture = null;
+        return texture;
     }
 }
