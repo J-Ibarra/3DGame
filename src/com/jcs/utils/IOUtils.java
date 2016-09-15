@@ -1,7 +1,8 @@
 package com.jcs.utils;
 
-import java.io.*;
-import java.net.URISyntaxException;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
@@ -18,10 +19,10 @@ import static org.lwjgl.BufferUtils.createByteBuffer;
 public class IOUtils {
 
     /**
-     * Reads the specified resource and returns the raw data as a ByteBuffer.
+     * Reads the specified resource and returns the raw data as a {@link ByteBuffer}.
      *
      * @param resource the resource to read
-     * @return the resource data
+     * @return the resource data in {@link ByteBuffer}
      */
     public static ByteBuffer ioResourceToByteBuffer(String resource) {
         ByteBuffer buffer;
@@ -43,6 +44,12 @@ public class IOUtils {
         }
     }
 
+    /**
+     * Reads the specified resource and returns the raw data as a byte array.
+     *
+     * @param resource the resource to read
+     * @return the resource data in int[]
+     */
     public static byte[] ioResourceToByteArray(String resource) {
         ByteBuffer data = ioResourceToByteBuffer(resource);
         byte[] arr = new byte[data.remaining()];
@@ -50,6 +57,12 @@ public class IOUtils {
         return arr;
     }
 
+    /**
+     * Reads the specified resource and returns the raw data as a {@link BufferedReader}.
+     *
+     * @param resource the resource to read
+     * @return the resource data in {@link BufferedReader}
+     */
     public static BufferedReader ioResourceToBufferedReader(String resource) {
         byte[] arr = ioResourceToByteArray(resource);
         return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(arr)));

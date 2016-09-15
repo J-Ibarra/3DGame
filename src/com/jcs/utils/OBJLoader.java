@@ -16,6 +16,7 @@ import static com.jcs.utils.IOUtils.ioResourceToBufferedReader;
 public class OBJLoader {
 
     public static class Model {
+        //<editor-fold defaultstate="collapsed" desc="Body of Model class">
         public final List<Vector3f> v; //data of vertices
         public final List<Vector2f> t; //data of textures
         public final List<Vector3f> n; //data of normals
@@ -27,9 +28,11 @@ public class OBJLoader {
             this.n = n;
             this.f = f;
         }
+        //</editor-fold>
     }
 
     public static class Face {
+        //<editor-fold defaultstate="collapsed" desc="Body of Face class">
         public final Vector3i v; //indices of Vertices
         public final Vector3i t; //indices of Textures
         public final Vector3i n; //indices of Normals
@@ -39,9 +42,11 @@ public class OBJLoader {
             this.t = t;
             this.n = n;
         }
+        //</editor-fold>
     }
 
     public static Model loadOBJ(String resource) {
+        //<editor-fold defaultstate="collapsed" desc="loadOBJ from resource">
         BufferedReader reader = ioResourceToBufferedReader(resource);
 
         List<Vector3f> v = new ArrayList<>(); //data of vertices
@@ -97,5 +102,6 @@ public class OBJLoader {
             throw new RuntimeException("Could not read file: " + resource);
         }
         return new Model(v, t, n, f);
+        //</editor-fold>
     }
 }

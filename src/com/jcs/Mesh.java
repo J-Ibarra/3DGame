@@ -14,9 +14,7 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
+import static org.lwjgl.opengl.GL30.*;
 
 /**
  * Created by Jcs on 14/9/2016.
@@ -24,13 +22,15 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 public class Mesh {
     private int vao = -1;
     private int nDraw = -1;
-    private int[] vbos;
-
+    private int[] vbs;
     private boolean drawMode = false;
 
+    //<editor-fold defaultstate="collapsed" desc="variables cache">
     private static List<Mesh> meshes = new ArrayList<>();
+    //</editor-fold>
 
     public Mesh() {
+        // <editor-fold defaultstate="collapsed" desc="init Mesh of default CubeTexture">
 
         float[] vertices = new float[]{
                 -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
@@ -82,13 +82,13 @@ public class Mesh {
         int floatsPerVertex = positionFloatCount + textureFloatCount;
         int vertexFloatSizeInBytes = floatByteSize * floatsPerVertex;
 
-        vbos = new int[1];
+        vbs = new int[1];
         vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
         int vbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        vbos[0] = vbo;
+        vbs[0] = vbo;
 
         FloatBuffer fb = BufferUtils.createFloatBuffer(vertices.length);
         fb.put(vertices).flip();
@@ -107,19 +107,21 @@ public class Mesh {
         drawMode = true;
 
         meshes.add(this);
+        // </editor-fold>
     }
 
     public Mesh(Data[] data) {
+        //<editor-fold defaultstate="collapsed" desc="create Mesh from Array Data">
         vao = glGenVertexArrays();
         glBindVertexArray(vao);
-        vbos = new int[data.length + 1];
+        vbs = new int[data.length + 1];
 
         for (int i = 0; i < data.length; i++) {
             Data d = data[i];
 
             int vbo = glGenBuffers();
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            vbos[i] = vbo;
+            vbs[i] = vbo;
 
             glBufferData(GL_ARRAY_BUFFER, d.data, GL_STATIC_DRAW);
             glVertexAttribPointer(d.index, d.size, GL_FLOAT, false, 0, 0);
@@ -129,30 +131,34 @@ public class Mesh {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         drawMode = true;
-
         meshes.add(this);
+        //</editor-fold>
     }
 
     public Mesh(Data[] data, int[] indices) {
+        //<editor-fold defaultstate="collapsed" desc="create Mesh from Array Data and put indices">
         this(data);
         glBindVertexArray(vao);
         IntBuffer ib = BufferUtils.createIntBuffer(indices.length);
         ib.put(indices).flip();
         int vbo = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
-        vbos[data.length] = vbo;
+        vbs[data.length] = vbo;
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, ib, GL_STATIC_DRAW);
         nDraw = indices.length;
         glBindVertexArray(0);
         drawMode = false;
+        //</editor-fold>
     }
 
     public Mesh(OBJLoader.Model model) {
+        //<editor-fold desc="create Mesh from OBJLoader">
         this(processModel(model));
+        //</editor-fold>
     }
 
     private static Data[] processModel(OBJLoader.Model model) {
-
+        // <editor-fold defaultstate="collapsed" desc="Data[] processModel from  OBJLoader">
         float[] vData = new float[model.f.size() * 3 * 3];
         float[] nData = new float[model.f.size() * 3 * 3];
         float[] tData = new float[model.f.size() * 2 * 3];
@@ -203,37 +209,46 @@ public class Mesh {
         Data t = new Data(1, 2, tData);
         Data n = new Data(2, 3, nData);
         return new Data[]{v, t, n};
+        // </editor-fold>
     }
 
     public void draw() {
+        // <editor-fold defaultstate="collapsed" desc="draw the Mesh">
         glBindVertexArray(vao);
-        if (!drawMode)
-            glDrawElements(GL_TRIANGLES, nDraw, GL_UNSIGNED_INT, 0);
-        else
+        if (drawMode)
             glDrawArrays(GL_TRIANGLES, 0, nDraw);
+        else
+            glDrawElements(GL_TRIANGLES, nDraw, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
+        // </editor-fold>
     }
 
     public static void cleanUp() {
+        // <editor-fold defaultstate="collapsed" desc="cleanUp all Meshes">
         while (!meshes.isEmpty()) {
             deleteMesh(meshes.get(0));
         }
+        // </editor-fold>
     }
 
     public static Mesh deleteMesh(Mesh mesh) {
-        for (int i = 0; i < mesh.vbos.length; i++) {
-            glDeleteBuffers(mesh.vbos[i]);
+        // <editor-fold defaultstate="collapsed" desc="deleteMesh">
+
+        for (int i = 0; i < mesh.vbs.length; i++) {
+            glDeleteBuffers(mesh.vbs[i]);
         }
         glDeleteVertexArrays(mesh.vao);
         mesh.nDraw = -1;
-        mesh.vbos = null;
+        mesh.vbs = null;
         mesh.vao = -1;
         meshes.remove(mesh);
         mesh = null;
         return mesh;
+        // </editor-fold>
     }
 
     public static class Data {
+        // <editor-fold defaultstate="collapsed" desc="Body of Data class">
         public FloatBuffer data;
         public int index;
         public int size;
@@ -250,6 +265,7 @@ public class Mesh {
             this.data = BufferUtils.createFloatBuffer(data.length);
             this.data.put(data).flip();
         }
+        // </editor-fold>
     }
 }
 

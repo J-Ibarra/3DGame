@@ -16,7 +16,7 @@ public class Camera {
         LEFT,
         RIGHT,
         UP,
-        DOWN
+        DOWN,
     }
 
     private float MAX_ZOOM = 120f;
@@ -54,7 +54,9 @@ public class Camera {
     }
 
     public Matrix4f getViewMatrix() {
-        return viewMatrix.identity().rotate(q).translate(pos.negate(new Vector3f()));
+        return viewMatrix.identity()
+                .rotate(q)
+                .translate(-pos.x, -pos.y, -pos.z);
     }
 
     public void processKeyboard(Movement direction) {

@@ -17,7 +17,8 @@ import java.util.Random;
 import static com.jcs.Mesh.Data;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
 
@@ -63,6 +64,7 @@ public class Main {
     Matrix4f ortho;
 
     private void init() {
+        //<editor-fold defaultstate="collapsed" desc="void init">
         camera = new Camera(new Vector3f(0f, 3f, 0f));
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
@@ -90,6 +92,7 @@ public class Main {
         ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
 
         config();
+        //</editor-fold>
     }
 
     private void config() {
@@ -98,10 +101,13 @@ public class Main {
     }
 
     private void initMesh0() {
+        //<editor-fold defaultstate="collapsed" desc="initMesh0">
         mesh0 = new Mesh();
+        //</editor-fold>
     }
 
     private void initMesh1() {
+        // <editor-fold defaultstate="collapsed" desc="void initMesh1">
         float[] vertices = new float[]{
                 -0.5f, -0.5f, -0.5f,
                 0.5f, -0.5f, -0.5f,
@@ -193,10 +199,12 @@ public class Main {
         Data v = new Data(0, 3, vertices);
         Data t = new Data(1, 2, texture);
         mesh1 = new Mesh(new Data[]{v, t});
-
+        // </editor-fold>
     }
 
     private void initMesh2() {
+        // <editor-fold defaultstate="collapsed" desc="void initMesh2">
+
         float[] positions = new float[]{
                 // V0
                 -0.5f, 0.5f, 0.5f,
@@ -286,13 +294,17 @@ public class Main {
         Mesh.Data[] data = new Mesh.Data[]{vert, text};
 
         mesh2 = new Mesh(data, indices);
+        // </editor-fold>
     }
 
     private void initMesh3() {
+        // <editor-fold defaultstate="collapsed" desc="void initMesh3">
         mesh3 = new Mesh(OBJLoader.loadOBJ("test/grassCube.obj"));
+        // </editor-fold>
     }
 
     private void initCallbacks() {
+        // <editor-fold defaultstate="collapsed" desc="void initCallbacks">
 
         glfwSetWindowCloseCallback(window, windowCloseCallback = new GLFWWindowCloseCallback() {
             @Override
@@ -353,10 +365,11 @@ public class Main {
             }
         });
 
+        // </editor-fold>
     }
 
     private void update(float delta) {
-
+        //<editor-fold defaultstate="collapsed" desc="Description">
         float move = delta;
         if (keys[GLFW_KEY_LEFT_SHIFT])
             move *= 2.0f;
@@ -385,6 +398,7 @@ public class Main {
         glUniformMatrix4fv(shader.getLocation("view"), false, camera.getViewMatrix().get(fb));
         glUniform1i(shader.getLocation("ourTexture"), 0);
         shader.unbind();
+        //</editor-fold>
     }
 
     Random r = new Random();
@@ -393,6 +407,7 @@ public class Main {
     FloatBuffer fb = BufferUtils.createFloatBuffer(16);
 
     private void render() {
+        //<editor-fold defaultstate="collapsed" desc="Description">
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         shader.bind();
 
@@ -434,11 +449,14 @@ public class Main {
         Font.render("zPos: " + camera.pos.z, new Vector2f(1, 30), ortho);
         Font.render("xRot: " + camera.q.x, new Vector2f(1, 40), ortho);
         Font.render("yRot: " + camera.q.y, new Vector2f(1, 50), ortho);
+        //</editor-fold>
     }
 
     private int dl = -1;
 
     private void renderGrid() {
+        // <editor-fold defaultstate="collapsed" desc="void renderGrid">
+
         if (dl == -1) {
             dl = glGenLists(1);
             glNewList(dl, GL_COMPILE);
@@ -465,9 +483,11 @@ public class Main {
             glEndList();
         }
         glCallList(dl);
+        // </editor-fold>
     }
 
     private void finish() {
+        //<editor-fold desc="void finish">
         ShaderProgram.cleanUp();
         Mesh.cleanUp();
         Texture.cleanUp();
@@ -479,22 +499,25 @@ public class Main {
         scrollCallback.free();
         windowCloseCallback.free();
         framebufferSizeCallback.free();
+        //</editor-fold>
     }
 
     private int i = 0;
     String text = "";
 
     private void oneSecond(int ups, int fps) {
+        // <editor-fold defaultstate="collapsed" desc="Body of class Data">
         text = "ups: " + ups + ", fps: " + fps;
 
         glfwSetWindowTitle(window, tittle + " || ups: " + ups + ", fps: " + fps);
         i++;
         if (i % 5 == 0)
             vec = new Vector3f(r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1);
+        // </editor-fold>
     }
 
     private void loop() {
-
+        // <editor-fold defaultstate="collapsed" desc="void Game Loop">
         int ups = 0, fps = 0;
         glfwSetTime(0);
 
@@ -531,9 +554,11 @@ public class Main {
 
         glfwSetWindowShouldClose(window, true); // We will detect this in our rendering loop
         finish();
+        // </editor-fold>
     }
 
     private void initGLFW() {
+        // <editor-fold defaultstate="collapsed" desc="void init GLFW">
         // Setup an error callback. The default implementation
         // will print the error message in System.err.
         GLFWErrorCallback.createPrint(System.err).set();
@@ -589,9 +614,11 @@ public class Main {
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GL.createCapabilities();
+        // </editor-fold>
     }
 
     public void run() {
+        // <editor-fold defaultstate="collapsed" desc="void run">
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
         try {
@@ -612,10 +639,13 @@ public class Main {
             glfwTerminate();
             glfwSetErrorCallback(null).free();
         }
+        // </editor-fold>
     }
 
     public static void main(String[] args) {
+        // <editor-fold defaultstate="collapsed" desc="public static void main">
         System.out.println("Hello Game!!");
         new Main().run();
+        // </editor-fold>
     }
 }

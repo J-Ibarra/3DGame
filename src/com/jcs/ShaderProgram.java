@@ -22,35 +22,46 @@ public class ShaderProgram {
     public int vsId;
     public int fsId;
 
+    //<editor-fold defaultstate="collapsed" desc="variables cache">
     private static List<ShaderProgram> shades = new ArrayList<>();
     private Map<String, Integer> uniform = new HashMap<>();
+    //</editor-fold>
 
     public ShaderProgram() {
+        //<editor-fold desc="create ShaderProgram empty">
         id = glCreateProgram();
         if (id < 1)
             throw new RuntimeException("Could not create Shader");
         shades.add(this);
+        //</editor-fold>
     }
 
     public ShaderProgram(String vs, String fs) {
+        //<editor-fold defaultstate="collapsed" desc="create ShaderProgram from resource">
         this();
         createVertexShader(vs);
         createFragmentShader(fs);
         link();
+        //</editor-fold>
     }
 
     public ShaderProgram(CharSequence vs, CharSequence fs) {
+        //<editor-fold desc="create ShaderProgram from source">
         this();
         createVertexShader(vs);
         createFragmentShader(fs);
         link();
+        //</editor-fold>
     }
 
     public void createUniform(String name) {
+        //<editor-fold  defaultstate="collapsed" desc="create variable in cache from uniform variable location">
         getLocation(name);
+        //</editor-fold>
     }
 
     public int getLocation(String name) {
+        //<editor-fold desc="getLocation from uniform variable">
         if (uniform.containsKey(name))
             return uniform.get(name);
 
@@ -60,9 +71,13 @@ public class ShaderProgram {
 
         uniform.put(name, result);
         return result;
+        //</editor-fold>
     }
 
-    public void createVertexShader(String resource) {
+
+    public void createVertexShader
+        //<editor-fold defaultstate="collapsed" desc="createVertexShader from source or resource">
+    (String resource) {
         vsId = createShader(resource, GL_VERTEX_SHADER);
         glAttachShader(id, vsId);
     }
@@ -71,8 +86,12 @@ public class ShaderProgram {
         vsId = createShader(source, GL_VERTEX_SHADER);
         glAttachShader(id, vsId);
     }
+    //</editor-fold>
 
-    public void createFragmentShader(String resource) {
+
+    public void createFragmentShader
+        //<editor-fold desc="createFragmentShader from source or resource">
+    (String resource) {
         fsId = createShader(resource, GL_FRAGMENT_SHADER);
         glAttachShader(id, fsId);
     }
@@ -81,8 +100,10 @@ public class ShaderProgram {
         fsId = createShader(source, GL_FRAGMENT_SHADER);
         glAttachShader(id, fsId);
     }
+    //</editor-fold>
 
     public void link() {
+        //<editor-fold defaultstate="collapsed" desc="link ShaderProgram">
         bind();
         glLinkProgram(id);
         if (glGetProgrami(id, GL_LINK_STATUS) == GL_FALSE) {
@@ -96,23 +117,31 @@ public class ShaderProgram {
                     glGetShaderInfoLog(fsId) + ", shader: " + glGetShaderInfoLog(id));
         }
         unbind();
+        //</editor-fold>
     }
 
     public void bind() {
+        //<editor-fold defaultstate="collapsed" desc="bind Shader">
         glUseProgram(id);
+        //</editor-fold>
     }
 
     public void unbind() {
+        //<editor-fold defaultstate="collapsed" desc="unbind Shader">
         glUseProgram(0);
+        //</editor-fold>
     }
 
     public static void cleanUp() {
+        //<editor-fold defaultstate="collapsed" desc="cleanUp all Shades">
         while (!shades.isEmpty()) {
             deleteShader(shades.get(0));
         }
+        //</editor-fold>
     }
 
     public static ShaderProgram deleteShader(ShaderProgram shader) {
+        //<editor-fold defaultstate="collapsed" desc="deleteShader">
         shader.unbind();
         if (shader.id > 0) {
             if (shader.vsId > 0) {
@@ -133,9 +162,11 @@ public class ShaderProgram {
             shader = null;
         }
         return shader;
+        //</editor-fold>
     }
 
     public int createShader(String resource, int shaderType) {
+        //<editor-fold desc="int createShader from resource">
         int shaderId = glCreateShader(shaderType);
         if (shaderId < 1) {
             throw new RuntimeException("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
@@ -156,9 +187,11 @@ public class ShaderProgram {
         }
 
         return shaderId;
+        //</editor-fold>
     }
 
     protected int createShader(CharSequence source, int shaderType) {
+        // <editor-fold defaultstate="collapsed" desc="int CreateShader from source">
         int shaderId = glCreateShader(shaderType);
         if (shaderId < 1) {
             throw new RuntimeException("Error creating shader, log: " + glGetShaderInfoLog(shaderId));
@@ -172,5 +205,6 @@ public class ShaderProgram {
         }
 
         return shaderId;
+        //</editor-fold>
     }
 }
