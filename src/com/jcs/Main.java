@@ -1,6 +1,6 @@
 package com.jcs;
 
-import com.jcs.test.OBJLoader;
+import com.jcs.utils.OBJLoader;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector2f;
@@ -36,6 +36,7 @@ public class Main {
 
     private GLFWKeyCallback keyCallback;
     private GLFWCursorPosCallback cursorPosCallback;
+    private GLFWMouseButtonCallback mouseButtonCallback;
     private GLFWScrollCallback scrollCallback;
     private GLFWWindowCloseCallback windowCloseCallback;
     private GLFWFramebufferSizeCallback framebufferSizeCallback;
@@ -48,12 +49,13 @@ public class Main {
     private Mesh mesh1;
     private Mesh mesh2;
     private Mesh mesh3;
-
     private Mesh mesh4;
+    private Mesh mesh5;
 
     Texture texture0;
     Texture texture1;
     Texture texture2;
+    Texture texture3;
 
     Matrix4f model;
     Matrix4f view;
@@ -61,7 +63,7 @@ public class Main {
     Matrix4f ortho;
 
     private void init() {
-        camera = new Camera();
+        camera = new Camera(new Vector3f(0f, 3f, 0f));
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
         shader.createUniform("model");
@@ -73,11 +75,14 @@ public class Main {
         initMesh1();
         initMesh2();
         initMesh3();
-        mesh4 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"));
+
+        mesh4 = new Mesh(OBJLoader.loadOBJ("test/planet.obj"));
+        mesh5 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"));
 
         texture0 = Texture.createClassTexture("test/texture.jpg");
         texture1 = Texture.createClassTexture("test/grassblock.png");
-        texture2 = Texture.createClassTexture("test/stallTexture.png");
+        texture2 = Texture.createClassTexture("test/planet.png");
+        texture3 = Texture.createClassTexture("test/stallTexture.png");
 
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
         view = new Matrix4f();
@@ -284,7 +289,7 @@ public class Main {
     }
 
     private void initMesh3() {
-        mesh3 = new Mesh(OBJLoader.loadOBJ("test/untitled.obj"));
+        mesh3 = new Mesh(OBJLoader.loadOBJ("test/grassCube.obj"));
     }
 
     private void initCallbacks() {
@@ -327,7 +332,6 @@ public class Main {
             public void invoke(long window, double xoffset, double yoffset) {
 
                 camera.processMouseScroll((float) yoffset);
-
                 projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
             }
         });
@@ -336,6 +340,16 @@ public class Main {
             @Override
             public void invoke(long window, double xpos, double ypos) {
                 camera.processMouseMovement((float) xpos / width, (float) ypos / height);
+            }
+        });
+
+        glfwSetMouseButtonCallback(window, mouseButtonCallback = new GLFWMouseButtonCallback() {
+            @Override
+            public void invoke(long window, int button, int action, int mods) {
+                if (button == GLFW_MOUSE_BUTTON_3 && action == GLFW_RELEASE) {
+                    camera.zoom = 60f;
+                    projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
+                }
             }
         });
 
@@ -390,16 +404,21 @@ public class Main {
         mesh1.draw();
 
         texture1.bind(0);
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(2.0f, 0.0f, -3.0f).rotate(q).get(fb));
         mesh2.draw();
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(2.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(4.0f, 0.0f, -3.0f).rotate(q).get(fb));
         mesh3.draw();
 
         texture2.bind(0);
-        Quaternionf qq = new Quaternionf().rotate(0,(float)Math.toRadians(180),0);
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
+        Quaternionf quaternion = new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1, 0));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0f, 1f, -3f).rotate(quaternion).scale(0.25f).get(fb));
         mesh4.draw();
+
+        texture3.bind(0);
+        Quaternionf qq = new Quaternionf().rotate(0, (float) Math.toRadians(180), 0);
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
+        mesh5.draw();
 
         shader.unbind();
 
@@ -427,7 +446,7 @@ public class Main {
             glColor3f(0f, 0f, 1f);
 
             int gridSize = 40;
-            float ceiling = 3.0f;
+            float ceiling = 6.0f;
 
             for (int i = -gridSize; i <= gridSize; i++) {
                 glVertex3f(-gridSize, 0.0f, i);
@@ -451,10 +470,12 @@ public class Main {
     private void finish() {
         ShaderProgram.cleanUp();
         Mesh.cleanUp();
+        Texture.cleanUp();
 
         /* <-- --> */
         keyCallback.free();
         cursorPosCallback.free();
+        mouseButtonCallback.free();
         scrollCallback.free();
         windowCloseCallback.free();
         framebufferSizeCallback.free();

@@ -1,4 +1,4 @@
-package com.jcs.test;
+package com.jcs.utils;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;

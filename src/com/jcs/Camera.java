@@ -10,7 +10,7 @@ import org.joml.Vector3f;
 public class Camera {
 
 
-    enum Movement {
+    public enum Movement {
         FORWARD,
         BACKWARD,
         LEFT,
@@ -19,7 +19,10 @@ public class Camera {
         DOWN
     }
 
-    public Matrix4f viewMatrix;
+    private float MAX_ZOOM = 120f;
+    private float MIN_ZOOM = 5f;
+
+    public Matrix4f viewMatrix = new Matrix4f();
 
     Vector3f pos = new Vector3f();
     Quaternionf q = new Quaternionf();
@@ -32,11 +35,15 @@ public class Camera {
     float movementSpeed = 3.0f;
     public float mouseSensitivity = 0.5f;
 
-    public float zoom;
+    public float zoom = 60f;
 
     public Camera() {
-        zoom = 60f;
-        viewMatrix = new Matrix4f();
+
+    }
+
+    public Camera(Vector3f pos) {
+        this();
+        this.pos = pos;
     }
 
     public void update(float move) {
@@ -65,20 +72,20 @@ public class Camera {
             pos.sub(up);
     }
 
-    void processMouseMovement(float xpos, float ypos) {
-        q.identity().rotateX(ypos * mouseSensitivity).rotateY(xpos * mouseSensitivity);
+    public void processMouseMovement(float xPos, float yPos) {
+        q.identity().rotateX(yPos * mouseSensitivity).rotateY(xPos * mouseSensitivity);
     }
 
-    public void processMouseScroll(float yoffset) {
-        if (yoffset < 0)
+    public void processMouseScroll(float yOffSet) {
+        if (yOffSet < 0)
             zoom *= 1.05;
         else
             zoom /= 1.05f;
 
-        if (zoom < 10.0f)
-            zoom = 10.0f;
-        if (zoom > 60.0f)
-            zoom = 60.0f;
+        if (zoom < MIN_ZOOM)
+            zoom = MIN_ZOOM;
+        if (zoom > MAX_ZOOM)
+            zoom = MAX_ZOOM;
     }
 
 }

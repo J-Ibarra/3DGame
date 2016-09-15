@@ -1,10 +1,9 @@
 package com.jcs;
 
-import com.jcs.test.OBJLoader;
+import com.jcs.utils.OBJLoader;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.system.CallbackI;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
