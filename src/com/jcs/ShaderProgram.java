@@ -5,6 +5,8 @@ import org.lwjgl.PointerBuffer;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.jcs.utils.IOUtils.ioResourceToByteBuffer;
 import static org.lwjgl.opengl.GL11.GL_FALSE;
@@ -18,10 +20,13 @@ public class ShaderProgram {
     public int vsId;
     public int fsId;
 
+    private static List<ShaderProgram> shaders = new ArrayList<>();
+
     public ShaderProgram() {
         id = glCreateProgram();
         if (id < 1)
             throw new RuntimeException("Could not create Shader");
+        shaders.add(this);
     }
 
     public ShaderProgram(String vs, String fs) {
@@ -71,11 +76,6 @@ public class ShaderProgram {
             throw new RuntimeException("Warning validating shader, log: vs:" + glGetShaderInfoLog(vsId) + ", fs:  " +
                     glGetShaderInfoLog(fsId) + ", shader: " + glGetShaderInfoLog(id));
         }
-
-        glDeleteShader(vsId);
-        vsId = -1;
-        glDeleteShader(fsId);
-        fsId = -1;
         unbind();
     }
 
@@ -87,23 +87,32 @@ public class ShaderProgram {
         glUseProgram(0);
     }
 
-    public void cleanUp() {
-        unbind();
-        if (id > 0) {
-            if (vsId > 0) {
-                glDetachShader(id, vsId);
-                glDeleteShader(vsId);
-            }
-            vsId = -1;
-
-            if (fsId > 0) {
-                glDetachShader(id, fsId);
-                glDeleteShader(fsId);
-                fsId = -1;
-            }
-            glDeleteProgram(id);
-            id = -1;
+    public static void cleanUp() {
+        while (!shaders.isEmpty()) {
+            deleteShader(shaders.get(0));
         }
+    }
+
+    public static ShaderProgram deleteShader(ShaderProgram shader) {
+        shader.unbind();
+        if (shader.id > 0) {
+            if (shader.vsId > 0) {
+                glDetachShader(shader.id, shader.vsId);
+                glDeleteShader(shader.vsId);
+            }
+            shader.vsId = -1;
+
+            if (shader.fsId > 0) {
+                glDetachShader(shader.id, shader.fsId);
+                glDeleteShader(shader.fsId);
+                shader.fsId = -1;
+            }
+            glDeleteProgram(shader.id);
+            shader.id = -1;
+            shaders.remove(shader);
+            shader = null;
+        }
+        return shader;
     }
 
     public int createShader(String resource, int shaderType) {

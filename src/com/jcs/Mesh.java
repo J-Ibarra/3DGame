@@ -8,6 +8,8 @@ import org.lwjgl.system.CallbackI;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -26,6 +28,8 @@ public class Mesh {
     private int[] vbos;
 
     private boolean drawMode = false;
+
+    private static List<Mesh> meshes = new ArrayList<>();
 
     public Mesh() {
 
@@ -102,6 +106,8 @@ public class Mesh {
 
         nDraw = 36;
         drawMode = true;
+
+        meshes.add(this);
     }
 
     public Mesh(Data[] data) {
@@ -124,6 +130,8 @@ public class Mesh {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
         drawMode = true;
+
+        meshes.add(this);
     }
 
     public Mesh(Data[] data, int[] indices) {
@@ -142,7 +150,6 @@ public class Mesh {
 
     public Mesh(OBJLoader.Model model) {
         this(processModel(model));
-        drawMode = true;
     }
 
     private static Data[] processModel(OBJLoader.Model model) {
@@ -208,14 +215,23 @@ public class Mesh {
         glBindVertexArray(0);
     }
 
-    public void cleanUp() {
-        for (int i = 0; i < vbos.length; i++) {
-            glDeleteBuffers(vbos[i]);
+    public static void cleanUp() {
+        while (!meshes.isEmpty()) {
+            deleteMesh(meshes.get(0));
         }
-        glDeleteVertexArrays(vao);
-        nDraw = -1;
-        vbos = null;
-        vao = -1;
+    }
+
+    public static Mesh deleteMesh(Mesh mesh) {
+        for (int i = 0; i < mesh.vbos.length; i++) {
+            glDeleteBuffers(mesh.vbos[i]);
+        }
+        glDeleteVertexArrays(mesh.vao);
+        mesh.nDraw = -1;
+        mesh.vbos = null;
+        mesh.vao = -1;
+        meshes.remove(mesh);
+        mesh = null;
+        return mesh;
     }
 
     public static class Data {

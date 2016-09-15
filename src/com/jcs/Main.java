@@ -454,8 +454,8 @@ public class Main {
     }
 
     private void finish() {
-        shader.cleanUp();
-        mesh2.cleanUp();
+        ShaderProgram.cleanUp();
+        Mesh.cleanUp();
 
         /* <-- --> */
         keyCallback.free();
