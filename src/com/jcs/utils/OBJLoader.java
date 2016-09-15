@@ -16,10 +16,17 @@ import static com.jcs.utils.IOUtils.ioResourceToBufferedReader;
 public class OBJLoader {
 
     public static class Model {
-        public List<Vector3f> v = new ArrayList<>();
-        public List<Vector2f> t = new ArrayList<>();
-        public List<Vector3f> n = new ArrayList<>();
-        public List<Face> f = new ArrayList<>();
+        public final List<Vector3f> v; //data of vertices
+        public final List<Vector2f> t; //data of textures
+        public final List<Vector3f> n; //data of normals
+        public final List<Face> f;     //data of faces
+
+        public Model(List<Vector3f> v, List<Vector2f> t, List<Vector3f> n, List<Face> f) {
+            this.v = v;
+            this.t = t;
+            this.n = n;
+            this.f = f;
+        }
     }
 
     public static class Face {
@@ -36,29 +43,34 @@ public class OBJLoader {
 
     public static Model loadOBJ(String resource) {
         BufferedReader reader = ioResourceToBufferedReader(resource);
-        Model m = new Model();
+
+        List<Vector3f> v = new ArrayList<>(); //data of vertices
+        List<Vector2f> t = new ArrayList<>(); //data of textures
+        List<Vector3f> n = new ArrayList<>(); //data of normals
+        List<Face> f = new ArrayList<>();     //data of faces
+
         try {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (line.startsWith("v ")) {
-                    String[] vs = line.split(" +");
+                    String[] vs = line.split(" ");
                     float x = Float.parseFloat(vs[1]);
                     float y = Float.parseFloat(vs[2]);
                     float z = Float.parseFloat(vs[3]);
-                    m.v.add(new Vector3f(x, y, z));
+                    v.add(new Vector3f(x, y, z));
                 } else if (line.startsWith("vt ")) {
-                    String[] ts = line.split(" +");
+                    String[] ts = line.split(" ");
                     float x = Float.parseFloat(ts[1]);
-                    float y = 1f-Float.parseFloat(ts[2]);
-                    m.t.add(new Vector2f(x, y));
+                    float y = 1f - Float.parseFloat(ts[2]);
+                    t.add(new Vector2f(x, y));
                 } else if (line.startsWith("vn ")) {
-                    String[] ns = line.split(" +");
+                    String[] ns = line.split(" ");
                     float x = Float.parseFloat(ns[1]);
                     float y = Float.parseFloat(ns[2]);
                     float z = Float.parseFloat(ns[3]);
-                    m.n.add(new Vector3f(x, y, z));
+                    n.add(new Vector3f(x, y, z));
                 } else if (line.startsWith("f ")) {
-                    String[] fs = line.split(" +");
+                    String[] fs = line.split(" ");
                     String[] f1 = fs[1].split("/");
                     String[] f2 = fs[2].split("/");
                     String[] f3 = fs[3].split("/");
@@ -78,13 +90,12 @@ public class OBJLoader {
                     int n3 = Integer.parseInt(f3[2]) - 1;
                     Vector3i ni = new Vector3i(n1, n2, n3);
 
-                    m.f.add(new Face(vi, ti, ni));
+                    f.add(new Face(vi, ti, ni));
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException("Could not read file: " + resource);
         }
-
-        return m;
+        return new Model(v, t, n, f);
     }
 }
