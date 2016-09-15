@@ -1,12 +1,9 @@
 package com.jcs;
 
-import com.jcs.ShaderProgram;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -15,7 +12,6 @@ import static org.lwjgl.BufferUtils.createFloatBuffer;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.stb.STBEasyFont.stb_easy_font_print;
-import static org.lwjgl.system.MemoryUtil.memAllocPointer;
 import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
@@ -34,8 +30,8 @@ public class Font {
                 .get(createFloatBuffer(16));
 
         shader.bind();
-        glUniformMatrix4fv(matLocation, false, fb);
-        glUniform3fv(colorLocation, color.get(createFloatBuffer(3)));
+        glUniformMatrix4fv(shader.getLocation("viewProjMatrix"), false, fb);
+        glUniform3fv(shader.getLocation("color"), color.get(createFloatBuffer(3)));
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(2, GL_FLOAT, 16, charBuffer);
         glDrawArrays(GL_QUADS, 0, quads * 4);
@@ -60,6 +56,9 @@ public class Font {
                     "}";
 
     private static ShaderProgram shader = new ShaderProgram(vs, fs);
-    private static int matLocation = glGetUniformLocation(shader.id, "viewProjMatrix");;
-    private static int colorLocation = glGetUniformLocation(shader.id, "color");
+
+    static {
+        shader.createUniform("viewProjMatrix");
+        shader.createUniform("color");
+    }
 }

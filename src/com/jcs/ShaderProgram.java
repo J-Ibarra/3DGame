@@ -6,7 +6,9 @@ import org.lwjgl.PointerBuffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.jcs.utils.IOUtils.ioResourceToByteBuffer;
 import static org.lwjgl.opengl.GL11.GL_FALSE;
@@ -20,13 +22,14 @@ public class ShaderProgram {
     public int vsId;
     public int fsId;
 
-    private static List<ShaderProgram> shaders = new ArrayList<>();
+    private static List<ShaderProgram> shades = new ArrayList<>();
+    private Map<String, Integer> uniform = new HashMap<>();
 
     public ShaderProgram() {
         id = glCreateProgram();
         if (id < 1)
             throw new RuntimeException("Could not create Shader");
-        shaders.add(this);
+        shades.add(this);
     }
 
     public ShaderProgram(String vs, String fs) {
@@ -41,6 +44,22 @@ public class ShaderProgram {
         createVertexShader(vs);
         createFragmentShader(fs);
         link();
+    }
+
+    public void createUniform(String name) {
+        getLocation(name);
+    }
+
+    public int getLocation(String name) {
+        if (uniform.containsKey(name))
+            return uniform.get(name);
+
+        int result = glGetUniformLocation(id, name);
+        if (result < 0)
+            throw new RuntimeException("Could not find uniform variable [" + name + "]");
+
+        uniform.put(name, result);
+        return result;
     }
 
     public void createVertexShader(String resource) {
@@ -88,8 +107,8 @@ public class ShaderProgram {
     }
 
     public static void cleanUp() {
-        while (!shaders.isEmpty()) {
-            deleteShader(shaders.get(0));
+        while (!shades.isEmpty()) {
+            deleteShader(shades.get(0));
         }
     }
 
@@ -109,7 +128,8 @@ public class ShaderProgram {
             }
             glDeleteProgram(shader.id);
             shader.id = -1;
-            shaders.remove(shader);
+            shader.uniform.clear();
+            shades.remove(shader);
             shader = null;
         }
         return shader;

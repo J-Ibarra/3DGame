@@ -64,10 +64,10 @@ public class Main {
         camera = new Camera();
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
-        modelLoc = glGetUniformLocation(shader.id, "model");
-        viewLoc = glGetUniformLocation(shader.id, "view");
-        projLoc = glGetUniformLocation(shader.id, "projection");
-        locOurTexture = glGetUniformLocation(shader.id, "ourTexture");
+        shader.createUniform("model");
+        shader.createUniform("view");
+        shader.createUniform("projection");
+        shader.createUniform("ourTexture");
 
         initMesh0();
         initMesh1();
@@ -367,16 +367,11 @@ public class Main {
         q.rotateAxis(delta, vec);
 
         shader.bind();
-        glUniformMatrix4fv(projLoc, false, projection.get(fb));
-        glUniformMatrix4fv(viewLoc, false, camera.getViewMatrix().get(fb));
-        glUniform1i(locOurTexture, 0);
+        glUniformMatrix4fv(shader.getLocation("projection"), false, projection.get(fb));
+        glUniformMatrix4fv(shader.getLocation("view"), false, camera.getViewMatrix().get(fb));
+        glUniform1i(shader.getLocation("ourTexture"), 0);
         shader.unbind();
     }
-
-    int modelLoc;
-    int viewLoc;
-    int projLoc;
-    int locOurTexture;
 
     Random r = new Random();
     Vector3f vec = new Vector3f(r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1, r.nextFloat() * 2 - 1);
@@ -388,22 +383,22 @@ public class Main {
         shader.bind();
 
         texture0.bind(0);
-        glUniformMatrix4fv(modelLoc, false, model.identity().translate(-4.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-4.0f, 0.0f, -3.0f).rotate(q).get(fb));
         mesh0.draw();
 
-        glUniformMatrix4fv(modelLoc, false, model.identity().translate(-2.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-2.0f, 0.0f, -3.0f).rotate(q).get(fb));
         mesh1.draw();
 
         texture1.bind(0);
-        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -3.0f).rotate(q).get(fb));
         mesh2.draw();
 
-        glUniformMatrix4fv(modelLoc, false, model.identity().translate(2.0f, 0.0f, -3.0f).rotate(q).get(fb));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(2.0f, 0.0f, -3.0f).rotate(q).get(fb));
         mesh3.draw();
 
         texture2.bind(0);
         Quaternionf qq = new Quaternionf().rotate(0,(float)Math.toRadians(180),0);
-        glUniformMatrix4fv(modelLoc, false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
         mesh4.draw();
 
         shader.unbind();
