@@ -4,11 +4,12 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import static org.lwjgl.glfw.GLFW.glfwSetCursorPos;
+
 /**
  * Created by Jcs on 9/9/2016.
  */
 public class Camera {
-
 
     public enum Movement {
         FORWARD,
@@ -19,8 +20,10 @@ public class Camera {
         DOWN,
     }
 
-    private float MAX_ZOOM = 120f;
-    private float MIN_ZOOM = 5f;
+    private final float MAX_ZOOM = 120f;
+    private final float MIN_ZOOM = 5f;
+    private final float PI = (float) Math.PI;
+    private final float PI_MED = PI / 2;
 
     public Matrix4f viewMatrix = new Matrix4f();
 
@@ -36,6 +39,8 @@ public class Camera {
     public float mouseSensitivity = 0.5f;
 
     public float zoom = 60f;
+    public int width;
+    public int height;
 
     public Camera() {
 
@@ -44,6 +49,12 @@ public class Camera {
     public Camera(Vector3f pos) {
         this();
         this.pos = pos;
+    }
+
+    public Camera(Vector3f pos, int width, int height) {
+        this(pos);
+        this.width = width;
+        this.height = height;
     }
 
     public void update(float move) {
@@ -74,8 +85,21 @@ public class Camera {
             pos.sub(up);
     }
 
-    public void processMouseMovement(float xPos, float yPos) {
-        q.identity().rotateX(yPos * mouseSensitivity).rotateY(xPos * mouseSensitivity);
+    public void processMouseMovement(long window, float xPos, float yPos) {
+        float xRot = (xPos / width) * mouseSensitivity;
+        float yRot = (yPos / height) * mouseSensitivity;
+
+        if (yRot < -PI_MED + 0.01f) {
+            yRot = -PI_MED + 0.01f;
+            glfwSetCursorPos(window, xPos, yRot * height / mouseSensitivity);
+        }
+
+        if (yRot > PI_MED - 0.01f) {
+            yRot = PI_MED - 0.01f;
+            glfwSetCursorPos(window, xPos, yRot * height / mouseSensitivity);
+        }
+
+        q.identity().rotateX(yRot).rotateY(xRot);
     }
 
     public void processMouseScroll(float yOffSet) {
@@ -88,6 +112,11 @@ public class Camera {
             zoom = MIN_ZOOM;
         if (zoom > MAX_ZOOM)
             zoom = MAX_ZOOM;
+    }
+
+    public void setWindowSize(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
 }

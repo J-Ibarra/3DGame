@@ -36,23 +36,23 @@ public class ShaderProgram {
         //</editor-fold>
     }
 
-    public ShaderProgram(String vs, String fs) {
-        //<editor-fold defaultstate="collapsed" desc="create ShaderProgram from resource">
+    public ShaderProgram
+        //<editor-fold defaultstate="collapsed" desc="create ShaderProgram from source or resource">
+    (String vs, String fs) {
         this();
         createVertexShader(vs);
         createFragmentShader(fs);
         link();
-        //</editor-fold>
     }
 
     public ShaderProgram(CharSequence vs, CharSequence fs) {
-        //<editor-fold desc="create ShaderProgram from source">
         this();
         createVertexShader(vs);
         createFragmentShader(fs);
         link();
-        //</editor-fold>
+
     }
+    //</editor-fold>
 
     public void createUniform(String name) {
         //<editor-fold  defaultstate="collapsed" desc="create variable in cache from uniform variable location">
@@ -73,7 +73,6 @@ public class ShaderProgram {
         return result;
         //</editor-fold>
     }
-
 
     public void createVertexShader
         //<editor-fold defaultstate="collapsed" desc="createVertexShader from source or resource">

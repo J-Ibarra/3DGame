@@ -65,7 +65,7 @@ public class Main {
 
     private void init() {
         //<editor-fold defaultstate="collapsed" desc="void init">
-        camera = new Camera(new Vector3f(0f, 3f, 0f));
+        camera = new Camera(new Vector3f(0f, 3f, 0f), width, height);
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
         shader.createUniform("model");
@@ -335,6 +335,7 @@ public class Main {
                 Main.this.height = height;
                 projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
                 ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
+                camera.setWindowSize(width, height);
                 glViewport(0, 0, width, height);
             }
         });
@@ -342,16 +343,16 @@ public class Main {
         glfwSetScrollCallback(window, scrollCallback = new GLFWScrollCallback() {
             @Override
             public void invoke(long window, double xoffset, double yoffset) {
-
                 camera.processMouseScroll((float) yoffset);
                 projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
             }
         });
 
+        glfwSetCursorPos(window, 0d, 0d);
         glfwSetCursorPosCallback(window, cursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
-                camera.processMouseMovement((float) xpos / width, (float) ypos / height);
+                camera.processMouseMovement(window, (float) xpos, (float) ypos);
             }
         });
 
@@ -444,11 +445,11 @@ public class Main {
         renderGrid();
 
         Font.render(text, new Vector2f(1f), ortho);
-        Font.render("xPos: " + camera.pos.x, new Vector2f(1, 10), ortho);
-        Font.render("yPos: " + camera.pos.y, new Vector2f(1, 20), ortho);
-        Font.render("zPos: " + camera.pos.z, new Vector2f(1, 30), ortho);
-        Font.render("xRot: " + camera.q.x, new Vector2f(1, 40), ortho);
-        Font.render("yRot: " + camera.q.y, new Vector2f(1, 50), ortho);
+        Font.render("Fovy: " + camera.zoom, new Vector2f(1, 20), ortho);
+        Font.render("xPos: " + camera.pos.x, new Vector2f(1, 30), ortho);
+        Font.render("yPos: " + camera.pos.y, new Vector2f(1, 40), ortho);
+        Font.render("zPos: " + camera.pos.z, new Vector2f(1, 50), ortho);
+        Font.render("Rot: " + camera.q.toString(), new Vector2f(1, 60), ortho);
         //</editor-fold>
     }
 
