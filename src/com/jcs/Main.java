@@ -7,15 +7,17 @@ import com.jcs.gfx.Texture;
 import com.jcs.gfx.camera.FirstPerson;
 import com.jcs.gfx.camera.FreeCamera;
 import com.jcs.utils.Loaders.OBJLoader;
-import org.joml.*;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
-import java.lang.Math;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.text.DecimalFormat;
 import java.util.Random;
 
 import static com.jcs.gfx.Mesh.Data;
@@ -56,11 +58,13 @@ public class Main {
     private Mesh mesh3;
     private Mesh mesh4;
     private Mesh mesh5;
+    private Mesh mesh6;
 
     Texture texture0;
     Texture texture1;
     Texture texture2;
     Texture texture3;
+    Texture texture4;
 
     Matrix4f model;
     Matrix4f view;
@@ -84,11 +88,13 @@ public class Main {
 
         mesh4 = new Mesh(OBJLoader.loadOBJ("test/planet.obj"));
         mesh5 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"));
+        mesh6 = new Mesh(OBJLoader.loadOBJ("test/Date_Palm.obj"));
 
         texture0 = Texture.createClassTexture("test/texture.jpg");
         texture1 = Texture.createClassTexture("test/grassblock.png");
         texture2 = Texture.createClassTexture("test/planet.png");
         texture3 = Texture.createClassTexture("test/stallTexture.png");
+        texture4 = Texture.createClassTexture("test/Bottom_Trunk.bmp");
 
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
         view = new Matrix4f();
@@ -442,6 +448,11 @@ public class Main {
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
         mesh5.draw();
 
+        texture4.bind(0);
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 8.0f).get(fb));
+        mesh6.draw();
+
+
         shader.unbind();
 
         glMatrixMode(GL_PROJECTION);
@@ -450,19 +461,9 @@ public class Main {
         glLoadMatrixf(camera.getViewMatrix().get(fb));
         renderGrid();
 
-        Font.render(text, new Vector2f(1f), ortho);
-        Font.render("Fovy: " + camera.zoom, 1, 20, ortho);
-        Font.render("xPos: " + camera.pos.x, 1, 30, ortho);
-        Font.render("yPos: " + camera.pos.y, 1, 40, ortho);
-        Font.render("zPos: " + camera.pos.z, 1, 50, ortho);
-        Font.render("view: ", 1, 60, ortho);
-        Font.render(camera.viewMatrix.getRow(0, new Vector4f()).toString(), 1, 70, ortho);
-        Font.render(camera.viewMatrix.getRow(1, new Vector4f()).toString(), 1, 80, ortho);
-        Font.render(camera.viewMatrix.getRow(2, new Vector4f()).toString(), 1, 90, ortho);
-        Font.render(camera.viewMatrix.getRow(3, new Vector4f()).toString(), 1, 100, ortho);
-        Font.render("Dir0: " + camera.dir.toString(), 1, 110, ortho);
-        Font.render("Dir1: " + camera.vAux.toString(), 1, 120, ortho);
-        Font.render("Pos: " + camera.pos.toString(), 1, 130, ortho);
+        Font.render(text, 10, 10, ortho);
+        Font.render("favy: " + camera.zoom, 10, 20, ortho);
+        Font.render("Pos: " + camera.pos.toString(new DecimalFormat()), 10, 30, ortho);
         //</editor-fold>
     }
 

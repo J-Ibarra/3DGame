@@ -11,7 +11,6 @@ import static org.lwjgl.glfw.GLFW.glfwSetCursorPos;
 public class FirstPerson extends FreeCamera {
 
     public float yPos = 0f;
-    public Vector3f vAux = new Vector3f();
 
     public FirstPerson() {
         super();

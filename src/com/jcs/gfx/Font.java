@@ -1,7 +1,7 @@
 package com.jcs.gfx;
 
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL20;
@@ -19,7 +19,7 @@ import static org.lwjgl.stb.STBEasyFont.stb_easy_font_print;
 public class Font {
 
 
-    public static void render(String text, Vector3f color, Vector2f pos, Matrix4f ortho) {
+    public static void render(String text, Vector3f color, Vector2i pos, Matrix4f ortho) {
 
         ByteBuffer charBuffer = BufferUtils.createByteBuffer(text.length() * 380);
         int quads = stb_easy_font_print(0, 0, text, null, charBuffer);
@@ -39,10 +39,10 @@ public class Font {
     }
 
     public static void render(String text, int x, int y, Matrix4f ortho) {
-        render(text, new Vector2f(x, y), ortho);
+        render(text, new Vector2i(x, y), ortho);
     }
 
-    public static void render(String text, Vector2f pos, Matrix4f ortho) {
+    public static void render(String text, Vector2i pos, Matrix4f ortho) {
         render(text, new Vector3f(1f), pos, ortho);
     }
 
