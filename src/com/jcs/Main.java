@@ -1,20 +1,24 @@
 package com.jcs;
 
-import com.jcs.utils.OBJLoader;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import com.jcs.gfx.Font;
+import com.jcs.gfx.Mesh;
+import com.jcs.gfx.ShaderProgram;
+import com.jcs.gfx.Texture;
+import com.jcs.gfx.camera.FirstPerson;
+import com.jcs.gfx.camera.FreeCamera;
+import com.jcs.utils.Loaders.OBJLoader;
+import org.joml.*;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 
+import java.lang.Math;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Random;
 
-import static com.jcs.Mesh.Data;
+import static com.jcs.gfx.Mesh.Data;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.glUniform1i;
@@ -44,7 +48,7 @@ public class Main {
 
     private ShaderProgram shader;
 
-    private Camera camera;
+    private FirstPerson camera;
 
     private Mesh mesh0;
     private Mesh mesh1;
@@ -65,7 +69,7 @@ public class Main {
 
     private void init() {
         //<editor-fold defaultstate="collapsed" desc="void init">
-        camera = new Camera(new Vector3f(0f, 3f, 0f), width, height);
+        camera = new FirstPerson(new Vector3f(0f, 3f, 0f), width, height);
 
         shader = new ShaderProgram("test/shader.vs", "test/shader.fs");
         shader.createUniform("model");
@@ -352,6 +356,8 @@ public class Main {
         glfwSetCursorPosCallback(window, cursorPosCallback = new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
+                //xpos = 0;
+                //ypos = 0;
                 camera.processMouseMovement(window, (float) xpos, (float) ypos);
             }
         });
@@ -380,17 +386,17 @@ public class Main {
         camera.update(move);
 
         if (keys[GLFW_KEY_W])
-            camera.processKeyboard(Camera.Movement.FORWARD);
+            camera.processKeyboard(FreeCamera.Movement.FORWARD);
         if (keys[GLFW_KEY_S])
-            camera.processKeyboard(Camera.Movement.BACKWARD);
+            camera.processKeyboard(FreeCamera.Movement.BACKWARD);
         if (keys[GLFW_KEY_A])
-            camera.processKeyboard(Camera.Movement.LEFT);
+            camera.processKeyboard(FreeCamera.Movement.LEFT);
         if (keys[GLFW_KEY_D])
-            camera.processKeyboard(Camera.Movement.RIGHT);
+            camera.processKeyboard(FreeCamera.Movement.RIGHT);
         if (keys[GLFW_KEY_SPACE])
-            camera.processKeyboard(Camera.Movement.UP);
+            camera.processKeyboard(FreeCamera.Movement.UP);
         if (keys[GLFW_KEY_LEFT_ALT])
-            camera.processKeyboard(Camera.Movement.DOWN);
+            camera.processKeyboard(FreeCamera.Movement.DOWN);
 
         q.rotateAxis(delta, vec);
 
@@ -445,11 +451,18 @@ public class Main {
         renderGrid();
 
         Font.render(text, new Vector2f(1f), ortho);
-        Font.render("Fovy: " + camera.zoom, new Vector2f(1, 20), ortho);
-        Font.render("xPos: " + camera.pos.x, new Vector2f(1, 30), ortho);
-        Font.render("yPos: " + camera.pos.y, new Vector2f(1, 40), ortho);
-        Font.render("zPos: " + camera.pos.z, new Vector2f(1, 50), ortho);
-        Font.render("Rot: " + camera.q.toString(), new Vector2f(1, 60), ortho);
+        Font.render("Fovy: " + camera.zoom, 1, 20, ortho);
+        Font.render("xPos: " + camera.pos.x, 1, 30, ortho);
+        Font.render("yPos: " + camera.pos.y, 1, 40, ortho);
+        Font.render("zPos: " + camera.pos.z, 1, 50, ortho);
+        Font.render("view: ", 1, 60, ortho);
+        Font.render(camera.viewMatrix.getRow(0, new Vector4f()).toString(), 1, 70, ortho);
+        Font.render(camera.viewMatrix.getRow(1, new Vector4f()).toString(), 1, 80, ortho);
+        Font.render(camera.viewMatrix.getRow(2, new Vector4f()).toString(), 1, 90, ortho);
+        Font.render(camera.viewMatrix.getRow(3, new Vector4f()).toString(), 1, 100, ortho);
+        Font.render("Dir0: " + camera.dir.toString(), 1, 110, ortho);
+        Font.render("Dir1: " + camera.vAux.toString(), 1, 120, ortho);
+        Font.render("Pos: " + camera.pos.toString(), 1, 130, ortho);
         //</editor-fold>
     }
 

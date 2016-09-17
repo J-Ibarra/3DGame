@@ -1,4 +1,4 @@
-package com.jcs;
+package com.jcs.gfx;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;

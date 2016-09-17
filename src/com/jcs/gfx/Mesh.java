@@ -1,6 +1,6 @@
-package com.jcs;
+package com.jcs.gfx;
 
-import com.jcs.utils.OBJLoader;
+import com.jcs.utils.Loaders.OBJLoader;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;

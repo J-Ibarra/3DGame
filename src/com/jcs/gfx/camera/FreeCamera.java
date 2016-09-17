@@ -1,15 +1,14 @@
-package com.jcs;
+package com.jcs.gfx.camera;
 
+import org.joml.Math;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import static org.lwjgl.glfw.GLFW.glfwSetCursorPos;
-
 /**
  * Created by Jcs on 9/9/2016.
  */
-public class Camera {
+public class FreeCamera {
 
     public enum Movement {
         FORWARD,
@@ -22,36 +21,35 @@ public class Camera {
 
     private final float MAX_ZOOM = 120f;
     private final float MIN_ZOOM = 5f;
-    private final float PI = (float) Math.PI;
-    private final float PI_MED = PI / 2;
+    public final float PIHalf = (float) Math.PI * 0.5f;
 
     public Matrix4f viewMatrix = new Matrix4f();
 
-    Vector3f pos = new Vector3f();
-    Quaternionf q = new Quaternionf();
+    public Vector3f pos = new Vector3f();
+    public Quaternionf q = new Quaternionf();
 
-    Vector3f dir = new Vector3f();
-    Vector3f right = new Vector3f();
-    Vector3f up = new Vector3f();
+    public Vector3f dir = new Vector3f();
+    public Vector3f right = new Vector3f();
+    public Vector3f up = new Vector3f();
 
 
-    float movementSpeed = 3.0f;
+    public float movementSpeed = 3.0f;
     public float mouseSensitivity = 0.5f;
 
     public float zoom = 60f;
     public int width;
     public int height;
 
-    public Camera() {
+    public FreeCamera() {
 
     }
 
-    public Camera(Vector3f pos) {
+    public FreeCamera(Vector3f pos) {
         this();
         this.pos = pos;
     }
 
-    public Camera(Vector3f pos, int width, int height) {
+    public FreeCamera(Vector3f pos, int width, int height) {
         this(pos);
         this.width = width;
         this.height = height;
@@ -65,9 +63,9 @@ public class Camera {
     }
 
     public Matrix4f getViewMatrix() {
-        return viewMatrix.identity()
-                .rotate(q)
+        return viewMatrix.identity().rotate(q)
                 .translate(-pos.x, -pos.y, -pos.z);
+
     }
 
     public void processKeyboard(Movement direction) {
@@ -88,16 +86,6 @@ public class Camera {
     public void processMouseMovement(long window, float xPos, float yPos) {
         float xRot = (xPos / width) * mouseSensitivity;
         float yRot = (yPos / height) * mouseSensitivity;
-
-        if (yRot < -PI_MED + 0.01f) {
-            yRot = -PI_MED + 0.01f;
-            glfwSetCursorPos(window, xPos, yRot * height / mouseSensitivity);
-        }
-
-        if (yRot > PI_MED - 0.01f) {
-            yRot = PI_MED - 0.01f;
-            glfwSetCursorPos(window, xPos, yRot * height / mouseSensitivity);
-        }
 
         q.identity().rotateX(yRot).rotateY(xRot);
     }

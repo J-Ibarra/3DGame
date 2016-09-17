@@ -1,18 +1,17 @@
-package com.jcs;
+package com.jcs.gfx;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL20;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.BufferUtils.createFloatBuffer;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.stb.STBEasyFont.stb_easy_font_print;
-import static org.lwjgl.system.MemoryUtil.memFree;
 
 /**
  * Created by Jcs on 11/9/2016.
@@ -30,13 +29,17 @@ public class Font {
                 .get(createFloatBuffer(16));
 
         shader.bind();
-        glUniformMatrix4fv(shader.getLocation("viewProjMatrix"), false, fb);
-        glUniform3fv(shader.getLocation("color"), color.get(createFloatBuffer(3)));
+        GL20.glUniformMatrix4fv(shader.getLocation("viewProjMatrix"), false, fb);
+        GL20.glUniform3fv(shader.getLocation("color"), color.get(createFloatBuffer(3)));
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(2, GL_FLOAT, 16, charBuffer);
         glDrawArrays(GL_QUADS, 0, quads * 4);
         glDisableClientState(GL_VERTEX_ARRAY);
         shader.unbind();
+    }
+
+    public static void render(String text, int x, int y, Matrix4f ortho) {
+        render(text, new Vector2f(x, y), ortho);
     }
 
     public static void render(String text, Vector2f pos, Matrix4f ortho) {
@@ -61,4 +64,6 @@ public class Font {
         shader.createUniform("viewProjMatrix");
         shader.createUniform("color");
     }
+
+
 }

@@ -1,5 +1,3 @@
-package com.jcs.test;
-
 import java.io.*;
 import java.util.zip.ZipInputStream;
 

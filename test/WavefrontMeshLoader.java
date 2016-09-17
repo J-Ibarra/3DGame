@@ -2,22 +2,16 @@
  * Copyright LWJGL. All rights reserved.
  * License terms: http://lwjgl.org/license.php
  */
-package com.jcs.test;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import org.joml.Vector3f;
+import org.lwjgl.BufferUtils;
+
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipInputStream;
-
-import org.lwjgl.BufferUtils;
-
-import org.joml.Vector3f;
 
 /**
  * A simple Wavefront obj file loader.
