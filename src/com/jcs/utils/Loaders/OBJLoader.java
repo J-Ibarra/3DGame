@@ -111,7 +111,7 @@ public class OBJLoader {
     }
 
     public static Model[] loadAnimationOBJ(String resource) {
-        BufferedReader[] bufferedReaders = IOUtils.getStringOfZipEntries(resource);
+        BufferedReader[] bufferedReaders = IOUtils.getBufferedReaderOfZipEntries(resource);
         Model[] models = new Model[bufferedReaders.length];
 
         for (int i = 0; i < models.length; i++) {

@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.zip.ZipInputStream;
 
 import static java.lang.Thread.currentThread;
@@ -73,86 +75,36 @@ public class IOUtils {
         return zipStream;
     }
 
-    /*public static ZipEntry[] getZipEntries(String resource) {
+    public static BufferedReader[] getBufferedReaderOfZipEntries(String resource) {
         ZipInputStream zipInputStream = getZipInputStream(resource);
-        List<ZipEntry> zipEntries = new ArrayList<>();
+        List<String> strings = new ArrayList<>();
+        //List<BufferedReader> bufferedReaders = new ArrayList<>();
 
         try {
-            ZipEntry zipEntry;
-            while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-                zipEntries.add(zipEntry);
-                //System.out.println(zipEntry.toString());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read the Zip: " + resource);
-        }
-
-        ZipEntry[] entries = new ZipEntry[zipEntries.size()];
-        for (int i = 0; i < entries.length; i++) {
-            entries[i] = zipEntries.get(i);
-        }
-
-        return entries;
-    }*/
-
-    public static int getZipEntries(ZipInputStream zipInputStream) {
-        int nEntries = 0;
-
-        try {
-            while (zipInputStream.getNextEntry() != null) {
-                nEntries++;
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Could not read the zipInputStream ");
-        }
-
-        return nEntries;
-    }
-
-    public static BufferedReader[] getStringOfZipEntries(String resource) {
-        ZipInputStream zipInputStream = getZipInputStream(resource);
-        int zipEntries = getZipEntries(zipInputStream);
-        BufferedReader[] bufferedReaders = new BufferedReader[zipEntries];
-        zipInputStream = getZipInputStream(resource);
-
-        try {
-            int i = 0;
             while (zipInputStream.getNextEntry() != null) {
                 InputStream inputStream = zipInputStream;
                 Reader reader = new InputStreamReader(inputStream);
                 BufferedReader br = new BufferedReader(reader);
-                bufferedReaders[i] = new BufferedReader(reader);
+                //bufferedReaders.add(br);
+                String line = "";
+                String l;
+                while ((l = br.readLine()) != null)
+                    line = line + l + "\n";
+                strings.add(line);
 
-                String line;
-                int j = 0;
-                while ((line = br.readLine()) != null) {
-                    if (j == 2)
-                        System.out.println(line);
-                    j++;
-                }
-
-
-                i++;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        try {
-            for (BufferedReader bufferedReader : bufferedReaders) {
-                String line;
-                int j = 0;
-                while ((line = bufferedReader.readLine()) != null) {
-                    if (j == 2)
-                        System.out.println(line);
-                    j++;
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        BufferedReader[] readers = new BufferedReader[strings.size()];
+
+        for (int i = 0; i < strings.size(); i++) {
+            InputStream is = new ByteArrayInputStream(strings.get(i).getBytes());
+            readers[i] = new BufferedReader(new InputStreamReader(is));
         }
 
-        return bufferedReaders;
+        return readers;
     }
 
 }
