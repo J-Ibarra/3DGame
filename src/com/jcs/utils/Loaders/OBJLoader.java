@@ -1,5 +1,6 @@
 package com.jcs.utils.Loaders;
 
+import com.jcs.utils.IOUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
@@ -45,10 +46,7 @@ public class OBJLoader {
         //</editor-fold>
     }
 
-    public static Model loadOBJ(String resource) {
-        //<editor-fold defaultstate="collapsed" desc="loadOBJ from resource">
-        BufferedReader reader = ioResourceToBufferedReader(resource);
-
+    private static Model loadModel(BufferedReader bufferedReader) {
         List<Vector3f> v = new ArrayList<>(); //data of vertices
         List<Vector2f> t = new ArrayList<>(); //data of textures
         List<Vector3f> n = new ArrayList<>(); //data of normals
@@ -56,7 +54,7 @@ public class OBJLoader {
 
         try {
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = bufferedReader.readLine()) != null) {
                 if (line.startsWith("v ")) {
                     String[] vs = line.split(" ");
                     float x = Float.parseFloat(vs[1]);
@@ -99,9 +97,27 @@ public class OBJLoader {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("Could not read file: " + resource);
+            throw new RuntimeException("Could not read bufferedReader");
         }
+
         return new Model(v, t, n, f);
+    }
+
+    public static Model loadOBJ(String resource) {
+        //<editor-fold defaultstate="collapsed" desc="loadOBJ from resource">
+        BufferedReader reader = ioResourceToBufferedReader(resource);
+        return loadModel(reader);
         //</editor-fold>
+    }
+
+    public static Model[] loadAnimationOBJ(String resource) {
+        BufferedReader[] bufferedReaders = IOUtils.getStringOfZipEntries(resource);
+        Model[] models = new Model[bufferedReaders.length];
+
+        for (int i = 0; i < models.length; i++) {
+            models[i] = loadModel(bufferedReaders[i]);
+        }
+
+        return models;
     }
 }

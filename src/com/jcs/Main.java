@@ -4,6 +4,7 @@ import com.jcs.gfx.Font;
 import com.jcs.gfx.Mesh;
 import com.jcs.gfx.ShaderProgram;
 import com.jcs.gfx.Texture;
+import com.jcs.gfx.camera.Animation;
 import com.jcs.gfx.camera.FirstPerson;
 import com.jcs.gfx.camera.FreeCamera;
 import com.jcs.utils.Loaders.OBJLoader;
@@ -66,6 +67,9 @@ public class Main {
     Texture texture3;
     Texture texture4;
 
+    Animation animation;
+    Texture texture5;
+
     Matrix4f model;
     Matrix4f view;
     Matrix4f projection;
@@ -95,6 +99,11 @@ public class Main {
         texture2 = Texture.createClassTexture("test/planet.png");
         texture3 = Texture.createClassTexture("test/stallTexture.png");
         texture4 = Texture.createClassTexture("test/Bottom_Trunk.bmp");
+
+
+        animation = new Animation(OBJLoader.loadAnimationOBJ("test/Animation/Animation.zip"));
+        texture5 = Texture.createClassTexture("test/Animation/char.png");
+
 
         model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
         view = new Matrix4f();
@@ -451,6 +460,10 @@ public class Main {
         texture4.bind(0);
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 8.0f).get(fb));
         mesh6.draw();
+
+        texture5.bind(0);
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 0.0f).get(fb));
+        animation.draw();
 
 
         shader.unbind();
