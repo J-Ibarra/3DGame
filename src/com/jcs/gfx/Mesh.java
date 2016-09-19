@@ -23,6 +23,8 @@ public class Mesh {
     private int vao = -1;
     private int nDraw = -1;
     private int[] vbs;
+    //false           true
+    //glDrawArrays or glDrawElements
     private boolean drawMode = false;
 
     //<editor-fold defaultstate="collapsed" desc="variables cache">
