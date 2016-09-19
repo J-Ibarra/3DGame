@@ -1,6 +1,5 @@
-package com.jcs.gfx.camera;
+package com.jcs.gfx;
 
-import com.jcs.gfx.Mesh;
 import com.jcs.utils.Loaders.OBJLoader;
 
 /**
@@ -18,7 +17,6 @@ public class Animation {
     }
 
     public int fps = 0;
-    public boolean r = false;
     public int i = 0;
 
     public void draw() {
@@ -30,16 +28,5 @@ public class Animation {
             if (fps == meshes.length)
                 fps = 0;
         }
-
-        /*if (i % 3 == 0) {
-            if (!r)
-                fps++;
-            else
-                fps--;
-            if (fps >= meshes.length - 1)
-                r = true;
-            if (fps <= 1)
-                r = false;
-        }*/
     }
 }

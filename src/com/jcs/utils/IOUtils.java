@@ -97,14 +97,14 @@ public class IOUtils {
             throw new RuntimeException(e);
         }
 
-        BufferedReader[] readers = new BufferedReader[strings.size()];
+        BufferedReader[] bufferedReaders = new BufferedReader[strings.size()];
 
         for (int i = 0; i < strings.size(); i++) {
             InputStream is = new ByteArrayInputStream(strings.get(i).getBytes());
-            readers[i] = new BufferedReader(new InputStreamReader(is));
+            bufferedReaders[i] = new BufferedReader(new InputStreamReader(is));
         }
 
-        return readers;
+        return bufferedReaders;
     }
 
 }

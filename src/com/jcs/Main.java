@@ -1,10 +1,6 @@
 package com.jcs;
 
-import com.jcs.gfx.Font;
-import com.jcs.gfx.Mesh;
-import com.jcs.gfx.ShaderProgram;
-import com.jcs.gfx.Texture;
-import com.jcs.gfx.camera.Animation;
+import com.jcs.gfx.*;
 import com.jcs.gfx.camera.FirstPerson;
 import com.jcs.gfx.camera.FreeCamera;
 import com.jcs.utils.Loaders.OBJLoader;

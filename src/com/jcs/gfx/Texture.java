@@ -103,7 +103,7 @@ public class Texture {
         //</editor-fold>
     }
 
-    public static void cleanUp(){
+    public static void cleanUp() {
         //<editor-fold defaultstate="collapsed" desc="Delete all Texture">
         while (!textures.isEmpty()) {
             deleteTexture(textures.get(0));
@@ -111,7 +111,7 @@ public class Texture {
         //</editor-fold>
     }
 
-    public static Texture deleteTexture(Texture texture){
+    public static Texture deleteTexture(Texture texture) {
         //<editor-fold defaultstate="collapsed" desc="delete Texture">
         glDeleteTextures(texture.id);
         textures.remove(texture);
