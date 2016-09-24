@@ -125,7 +125,7 @@ public class ShaderProgram {
         //</editor-fold>
     }
 
-    public void unbind() {
+    public static void unbind() {
         //<editor-fold defaultstate="collapsed" desc="unbind Shader">
         glUseProgram(0);
         //</editor-fold>

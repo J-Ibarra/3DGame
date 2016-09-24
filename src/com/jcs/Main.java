@@ -3,7 +3,7 @@ package com.jcs;
 import com.jcs.gfx.*;
 import com.jcs.gfx.camera.FirstPerson;
 import com.jcs.gfx.camera.FreeCamera;
-import com.jcs.utils.Loaders.OBJLoader;
+import com.jcs.utils.loaders.obj.OBJLoader;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -59,9 +59,6 @@ public class Main {
 
     Texture texture0;
     Texture texture1;
-    Texture texture2;
-    Texture texture3;
-    Texture texture4;
 
     Animation animation;
     Texture texture5;
@@ -81,20 +78,19 @@ public class Main {
         shader.createUniform("projection");
         shader.createUniform("ourTexture");
 
-        initMesh0();
-        initMesh1();
-        initMesh2();
-        initMesh3();
-
-        mesh4 = new Mesh(OBJLoader.loadOBJ("test/planet.obj"));
-        mesh5 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"));
-        mesh6 = new Mesh(OBJLoader.loadOBJ("test/Date_Palm.obj"));
-
         texture0 = Texture.createClassTexture("test/texture.jpg");
         texture1 = Texture.createClassTexture("test/grassblock.png");
-        texture2 = Texture.createClassTexture("test/planet.png");
-        texture3 = Texture.createClassTexture("test/stallTexture.png");
-        texture4 = Texture.createClassTexture("test/Bottom_Trunk.bmp");
+
+        mesh0 = new Mesh(texture0);
+        initMesh1();
+        mesh1.setTexture(texture0);
+        initMesh2();
+        mesh2.setTexture(texture1);
+
+        mesh3 = new Mesh(OBJLoader.loadOBJ("test/grassCube.obj"), texture1);
+        mesh4 = new Mesh(OBJLoader.loadOBJ("test/planet.obj"), "test/planet.png");
+        mesh5 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"), "test/stallTexture.png");
+        mesh6 = new Mesh(OBJLoader.loadOBJ("test/Date_Palm.obj"), "test/Bottom_Trunk.bmp");
 
 
         animation = new Animation(OBJLoader.loadAnimationOBJ("test/Animation/Animation.zip"));
@@ -113,12 +109,6 @@ public class Main {
     private void config() {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         glEnable(GL_DEPTH_TEST);
-    }
-
-    private void initMesh0() {
-        //<editor-fold defaultstate="collapsed" desc="initMesh0">
-        mesh0 = new Mesh();
-        //</editor-fold>
     }
 
     private void initMesh1() {
@@ -293,7 +283,7 @@ public class Main {
         int[] indices = new int[]{
                 // Front face
                 0, 1, 3, 3, 1, 2,
-                // Top Face
+                // Top OBJFace
                 8, 10, 11, 9, 8, 11,
                 // Right face
                 12, 13, 7, 5, 12, 7,
@@ -309,12 +299,6 @@ public class Main {
         Mesh.Data[] data = new Mesh.Data[]{vert, text};
 
         mesh2 = new Mesh(data, indices);
-        // </editor-fold>
-    }
-
-    private void initMesh3() {
-        // <editor-fold defaultstate="collapsed" desc="void initMesh3">
-        mesh3 = new Mesh(OBJLoader.loadOBJ("test/grassCube.obj"));
         // </editor-fold>
     }
 
@@ -426,43 +410,38 @@ public class Main {
 
     private void render() {
         //<editor-fold defaultstate="collapsed" desc="Description">
-        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
         shader.bind();
 
-        texture0.bind(0);
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-4.0f, 0.0f, -3.0f).rotate(q).get(fb));
-        mesh0.draw();
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-4.0f, 0.5f, -3.0f).rotate(q).get(fb));
+        mesh0.draw(0);
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-2.0f, 0.0f, -3.0f).rotate(q).get(fb));
-        mesh1.draw();
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-2.0f, 0.5f, -3.0f).rotate(q).get(fb));
+        mesh1.draw(0);
 
-        texture1.bind(0);
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(2.0f, 0.0f, -3.0f).rotate(q).get(fb));
-        mesh2.draw();
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(2.0f, 0.5f, -3.0f).rotate(q).get(fb));
+        mesh2.draw(0);
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(4.0f, 0.0f, -3.0f).rotate(q).get(fb));
-        mesh3.draw();
+        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(4.0f, 0.5f, -3.0f).rotate(q).get(fb));
+        mesh3.draw(0);
 
-        texture2.bind(0);
         Quaternionf quaternion = new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1, 0));
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0f, 1f, -3f).rotate(quaternion).scale(0.25f).get(fb));
-        mesh4.draw();
+        mesh4.draw(0);
 
-        texture3.bind(0);
         Quaternionf qq = new Quaternionf().rotate(0, (float) Math.toRadians(180), 0);
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
-        mesh5.draw();
+        mesh5.draw(0);
 
-        texture4.bind(0);
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 8.0f).get(fb));
-        mesh6.draw();
+        mesh6.draw(0);
 
         texture5.bind(0);
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 0.0f).get(fb));
         animation.draw();
 
-
-        shader.unbind();
+        Texture.unbind();
+        ShaderProgram.unbind();
 
         glMatrixMode(GL_PROJECTION);
         glLoadMatrixf(projection.get(fb));

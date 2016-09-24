@@ -103,6 +103,10 @@ public class Texture {
         //</editor-fold>
     }
 
+    public static void unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     public static void cleanUp() {
         //<editor-fold defaultstate="collapsed" desc="Delete all Texture">
         while (!textures.isEmpty()) {
