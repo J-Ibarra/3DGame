@@ -3,7 +3,7 @@
  */
 public class testZip {
     public static void main(String[] args) throws Exception{
-        String arg = "test/Animation/Animation.zip";
+        String arg = "test/animation/animation.zip";
 
 
         /*ZipInputStream zipStream = new ZipInputStream(Thread.currentThread().getContextClassLoader().getResourceAsStream(arg));

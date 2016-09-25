@@ -3,6 +3,7 @@ package com.jcs;
 import com.jcs.gfx.*;
 import com.jcs.gfx.camera.FirstPerson;
 import com.jcs.gfx.camera.FreeCamera;
+import com.jcs.gfx.camera.GameItem;
 import com.jcs.utils.loaders.obj.OBJLoader;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -20,7 +21,7 @@ import java.util.Random;
 import static com.jcs.gfx.Mesh.Data;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glUniform1i;
 import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
@@ -49,13 +50,13 @@ public class Main {
 
     private FirstPerson camera;
 
-    private Mesh mesh0;
-    private Mesh mesh1;
-    private Mesh mesh2;
-    private Mesh mesh3;
-    private Mesh mesh4;
-    private Mesh mesh5;
-    private Mesh mesh6;
+    private GameItem gameItem0;
+    private GameItem gameItem1;
+    private GameItem gameItem2;
+    private GameItem gameItem3;
+    private GameItem gameItem4;
+    private GameItem gameItem5;
+    private GameItem gameItem6;
 
     Texture texture0;
     Texture texture1;
@@ -69,6 +70,7 @@ public class Main {
     Matrix4f ortho;
 
     private void init() {
+
         //<editor-fold defaultstate="collapsed" desc="void init">
         camera = new FirstPerson(new Vector3f(0f, 3f, 0f), width, height);
 
@@ -81,23 +83,43 @@ public class Main {
         texture0 = Texture.createClassTexture("test/texture.jpg");
         texture1 = Texture.createClassTexture("test/grassblock.png");
 
-        mesh0 = new Mesh(texture0);
-        initMesh1();
+        gameItem0 = new GameItem(new Mesh(texture0));
+        gameItem0.position.set(-4.0f, 0.5f, -3.0f);
+
+        Mesh mesh1 = initMesh1();
         mesh1.setTexture(texture0);
-        initMesh2();
+        gameItem1 = new GameItem(mesh1);
+        gameItem1.position.set(-2.0f, 0.5f, -3.0f);
+
+
+        Mesh mesh2 = initMesh2();
         mesh2.setTexture(texture1);
+        gameItem2 = new GameItem(mesh2);
+        gameItem2.position.set(2.0f, 0.5f, -3.0f);
 
-        mesh3 = new Mesh(OBJLoader.loadOBJ("test/grassCube.obj"), texture1);
-        mesh4 = new Mesh(OBJLoader.loadOBJ("test/planet.obj"), "test/planet.png");
-        mesh5 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"), "test/stallTexture.png");
-        mesh6 = new Mesh(OBJLoader.loadOBJ("test/Date_Palm.obj"), "test/Bottom_Trunk.bmp");
+        Mesh mesh3 = new Mesh(OBJLoader.loadOBJ("test/grassCube.obj"), texture1);
+        gameItem3 = new GameItem(mesh3);
+        gameItem3.position.set(4.0f, 0.5f, -3.0f);
 
+        Mesh mesh4 = new Mesh(OBJLoader.loadOBJ("test/planet.obj"), "test/planet.png");
+        gameItem4 = new GameItem(mesh4);
+        gameItem4.position.set(0f, 1f, -3f);
+        gameItem4.scale = 0.25f;
 
-        animation = new Animation(OBJLoader.loadAnimationOBJ("test/Animation/Animation.zip"));
-        texture5 = Texture.createClassTexture("test/Animation/char.png");
+        Mesh mesh5 = new Mesh(OBJLoader.loadOBJ("test/stall.obj"), "test/stallTexture.png");
+        gameItem5 = new GameItem(mesh5);
+        gameItem5.position.set(0.0f, 0.0f, -8.0f);
+        gameItem5.rotation.set(new Quaternionf().rotate(0, (float) Math.toRadians(180), 0));
 
+        Mesh mesh6 = new Mesh(OBJLoader.loadOBJ("test/Date_Palm.obj"), "test/Bottom_Trunk.bmp");
+        gameItem6 = new GameItem(mesh6);
+        gameItem6.position.set(0.0f, 0.0f, 8.0f);
+        gameItem6.scale = 0.4f;
 
-        model = new Matrix4f().translate(0.0f, 0.0f, -3.0f);
+        animation = new Animation(OBJLoader.loadAnimationOBJ("test/animation/animation.zip"));
+        texture5 = Texture.createClassTexture("test/animation/char.png");
+
+        model = new Matrix4f();
         view = new Matrix4f();
         projection = new Matrix4f().setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
         ortho = new Matrix4f().setOrtho2D(0, width, height, 0);
@@ -111,7 +133,7 @@ public class Main {
         glEnable(GL_DEPTH_TEST);
     }
 
-    private void initMesh1() {
+    private Mesh initMesh1() {
         // <editor-fold defaultstate="collapsed" desc="void initMesh1">
         float[] vertices = new float[]{
                 -0.5f, -0.5f, -0.5f,
@@ -203,11 +225,11 @@ public class Main {
 
         Data v = new Data(0, 3, vertices);
         Data t = new Data(1, 2, texture);
-        mesh1 = new Mesh(new Data[]{v, t});
+        return new Mesh(new Data[]{v, t});
         // </editor-fold>
     }
 
-    private void initMesh2() {
+    private Mesh initMesh2() {
         // <editor-fold defaultstate="collapsed" desc="void initMesh2">
 
         float[] positions = new float[]{
@@ -298,7 +320,7 @@ public class Main {
         Data text = new Data(1, 2, textCoords);
         Mesh.Data[] data = new Mesh.Data[]{vert, text};
 
-        mesh2 = new Mesh(data, indices);
+        return new Mesh(data, indices);
         // </editor-fold>
     }
 
@@ -413,28 +435,32 @@ public class Main {
         glClearColor(0.6f, 0.6f, 0.6f, 1.0f);
         shader.bind();
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-4.0f, 0.5f, -3.0f).rotate(q).get(fb));
-        mesh0.draw(0);
+        gameItem0.rotation.set(q);
+        glUniformMatrix4fv(shader.getLocation("model"), false, gameItem0.getModelMatrix().get(fb));
+        gameItem0.draw(0);
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(-2.0f, 0.5f, -3.0f).rotate(q).get(fb));
-        mesh1.draw(0);
+        gameItem1.rotation.set(q);
+        glUniformMatrix4fv(shader.getLocation("model"), false, gameItem1.getModelMatrix().get(fb));
+        gameItem1.draw(0);
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(2.0f, 0.5f, -3.0f).rotate(q).get(fb));
-        mesh2.draw(0);
+        gameItem2.rotation.set(q);
+        glUniformMatrix4fv(shader.getLocation("model"), false, gameItem2.getModelMatrix().get(fb));
+        gameItem2.draw(0);
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(4.0f, 0.5f, -3.0f).rotate(q).get(fb));
-        mesh3.draw(0);
+        gameItem3.rotation.set(q);
+        glUniformMatrix4fv(shader.getLocation("model"), false, gameItem3.getModelMatrix().get(fb));
+        gameItem3.draw(0);
 
-        Quaternionf quaternion = new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1, 0));
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0f, 1f, -3f).rotate(quaternion).scale(0.25f).get(fb));
-        mesh4.draw(0);
+        gameItem4.rotation.set(new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1, 0)));
+        glUniformMatrix4fv(shader.getLocation("model"), false, gameItem4.getModelMatrix().get(fb));
+        gameItem4.draw(0);
 
-        Quaternionf qq = new Quaternionf().rotate(0, (float) Math.toRadians(180), 0);
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, -8.0f).rotate(qq).get(fb));
-        mesh5.draw(0);
+        glUniformMatrix4fv(shader.getLocation("model"), false, gameItem5.getModelMatrix().get(fb));
+        gameItem5.draw(0);
 
-        glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 8.0f).get(fb));
-        mesh6.draw(0);
+        gameItem6.rotation.set(new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1, 0)));
+        glUniformMatrix4fv(shader.getLocation("model"), false, gameItem6.getModelMatrix().get(fb));
+        gameItem6.draw(0);
 
         texture5.bind(0);
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 0.0f).get(fb));
@@ -606,7 +632,7 @@ public class Main {
         glfwMakeContextCurrent(window);
 
         // Enable v-sync
-        glfwSwapInterval(0);
+        glfwSwapInterval(1);
 
         // Make the window visible
         glfwShowWindow(window);

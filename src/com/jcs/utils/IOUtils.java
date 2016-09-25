@@ -53,7 +53,7 @@ public class IOUtils {
      */
     public static byte[] ioResourceToByteArray(String resource) {
         ByteBuffer data = ioResourceToByteBuffer(resource);
-        byte[] arr = new byte[data.remaining()];
+        byte[] arr = new byte[data.limit()];
         data.get(arr);
         return arr;
     }
@@ -105,6 +105,22 @@ public class IOUtils {
         }
 
         return bufferedReaders;
+    }
+
+    public static List<String> ioResourceToListString(String resource) {
+        BufferedReader bufferedReader = ioResourceToBufferedReader(resource);
+        List<String> strings = new ArrayList<>();
+
+        try {
+            String line;
+            while ((line = bufferedReader.readLine()) != null)
+                strings.add(line);
+            bufferedReader.close();
+        } catch (Exception e) {
+            throw new RuntimeException();
+        }
+
+        return strings;
     }
 
 }

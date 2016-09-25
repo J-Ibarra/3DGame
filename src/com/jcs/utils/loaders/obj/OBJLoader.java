@@ -46,7 +46,7 @@ public class OBJLoader {
         //</editor-fold>
     }
 
-    private static OBJModel loadModel(BufferedReader bufferedReader) {
+    public static OBJModel loadModel(BufferedReader bufferedReader) {
         List<Vector3f> v = new ArrayList<>(); //data of vertices
         List<Vector2f> t = new ArrayList<>(); //data of textures
         List<Vector3f> n = new ArrayList<>(); //data of normals
