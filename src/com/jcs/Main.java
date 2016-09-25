@@ -20,7 +20,7 @@ import java.util.Random;
 import static com.jcs.gfx.Mesh.Data;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.glUniform1i;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
 import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memAddress;
@@ -399,7 +399,7 @@ public class Main {
         glUniformMatrix4fv(shader.getLocation("projection"), false, projection.get(fb));
         glUniformMatrix4fv(shader.getLocation("view"), false, camera.getViewMatrix().get(fb));
         glUniform1i(shader.getLocation("ourTexture"), 0);
-        shader.unbind();
+        ShaderProgram.unbind();
         //</editor-fold>
     }
 
@@ -606,7 +606,7 @@ public class Main {
         glfwMakeContextCurrent(window);
 
         // Enable v-sync
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
 
         // Make the window visible
         glfwShowWindow(window);

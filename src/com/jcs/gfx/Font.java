@@ -4,13 +4,13 @@ import org.joml.Matrix4f;
 import org.joml.Vector2i;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL20;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import static org.lwjgl.BufferUtils.createFloatBuffer;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.stb.STBEasyFont.stb_easy_font_print;
 
 /**
@@ -29,13 +29,13 @@ public class Font {
                 .get(createFloatBuffer(16));
 
         shader.bind();
-        GL20.glUniformMatrix4fv(shader.getLocation("viewProjMatrix"), false, fb);
-        GL20.glUniform3fv(shader.getLocation("color"), color.get(createFloatBuffer(3)));
+        glUniformMatrix4fv(shader.getLocation("viewProjMatrix"), false, fb);
+        glUniform3fv(shader.getLocation("color"), color.get(createFloatBuffer(3)));
         glEnableClientState(GL_VERTEX_ARRAY);
         glVertexPointer(2, GL_FLOAT, 16, charBuffer);
         glDrawArrays(GL_QUADS, 0, quads * 4);
         glDisableClientState(GL_VERTEX_ARRAY);
-        shader.unbind();
+        ShaderProgram.unbind();
     }
 
     public static void render(String text, int x, int y, Matrix4f ortho) {
