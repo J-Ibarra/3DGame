@@ -2,14 +2,4 @@
 /out/
 /*.iml
 /hs_err_pid*
-/src/com/jcs/utils/loaders/md5/MD5HeaderData.java
-/src/com/jcs/utils/loaders/md5/MD5MeshData.java
-/src/com/jcs/utils/loaders/md5/MD5Loader.java
-/src/com/jcs/utils/loaders/md5/MD5JointData.java
-/src/com/jcs/gfx/MD5Mesh.java
-/res/test/animation/hellknight.png
-/res/test/animation/gob.png
-/res/test/animation/monster.md5anim
-/res/test/animation/monster.md5mesh
-/res/test/animation/tongue.png
-/res/test/animation/gob2.png
+

@@ -4,6 +4,8 @@ import com.jcs.gfx.*;
 import com.jcs.gfx.camera.FirstPerson;
 import com.jcs.gfx.camera.FreeCamera;
 import com.jcs.gfx.camera.GameItem;
+import com.jcs.utils.loaders.md5.MD5Loader;
+import com.jcs.utils.loaders.md5.MD5Model;
 import com.jcs.utils.loaders.obj.OBJLoader;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -58,6 +60,8 @@ public class Main {
     private GameItem gameItem5;
     private GameItem gameItem6;
 
+    private GameItem monster;
+
     Texture texture0;
     Texture texture1;
 
@@ -70,6 +74,13 @@ public class Main {
     Matrix4f ortho;
 
     private void init() {
+
+        MD5Model md5MeshModel = MD5Model.parse("test/animation/monster.md5mesh");
+        monster = MD5Loader.process(md5MeshModel);
+        monster.scale = 0.025f;
+        monster.position.set(0f, 0f, 3f);
+        monster.rotation.set(new Quaternionf().rotate((float) -Math.toRadians(90), 0, 0));
+
 
         //<editor-fold defaultstate="collapsed" desc="void init">
         camera = new FirstPerson(new Vector3f(0f, 3f, 0f), width, height);
@@ -461,6 +472,9 @@ public class Main {
         gameItem6.rotation.set(new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1, 0)));
         glUniformMatrix4fv(shader.getLocation("model"), false, gameItem6.getModelMatrix().get(fb));
         gameItem6.draw(0);
+
+        glUniformMatrix4fv(shader.getLocation("model"), false, monster.getModelMatrix().get(fb));
+        monster.draw(0);
 
         texture5.bind(0);
         glUniformMatrix4fv(shader.getLocation("model"), false, model.identity().translate(0.0f, 0.0f, 0.0f).get(fb));
