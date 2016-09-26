@@ -16,10 +16,8 @@ public class MD5Loader {
     private static final String NORMAL_FILE_SUFFIX = "_normal";
 
     public static GameItem process(MD5Model md5Model) {
-        List<MD5Mesh> md5MeshList = md5Model.getMeshes();
-
         List<Mesh> list = new ArrayList<>();
-        for (MD5Mesh md5Mesh : md5Model.getMeshes()) {
+        for (MD5Mesh md5Mesh : md5Model.meshes) {
             Mesh mesh = generateMesh(md5Model, md5Mesh);
             handleTexture(mesh, md5Mesh);
             list.add(mesh);
@@ -27,7 +25,6 @@ public class MD5Loader {
         Mesh[] meshes = new Mesh[list.size()];
         meshes = list.toArray(meshes);
         GameItem gameItem = new GameItem(meshes);
-
         return gameItem;
     }
 
@@ -35,37 +32,37 @@ public class MD5Loader {
         List<VertexInfo> vertexInfoList = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
 
-        List<MD5Mesh.MD5Vertex> vertices = md5Mesh.getVertices();
-        List<MD5Mesh.MD5Weight> weights = md5Mesh.getWeights();
-        List<MD5JointInfo.MD5JointData> joints = md5Model.getJointInfo().getJoints();
+        List<MD5Mesh.MD5Vertex> vertices = md5Mesh.vertices;
+        List<MD5Mesh.MD5Weight> weights = md5Mesh.weights;
+        List<MD5Joint> joints = md5Model.joints;
 
         for (MD5Mesh.MD5Vertex vertex : vertices) {
             Vector3f vertexPos = new Vector3f();
-            Vector2f vertexTextCoords = vertex.getTextCoords();
-            int startWeight = vertex.getStartWeight();
-            int numWeights = vertex.getWeightCount();
+            Vector2f vertexTextCoords = vertex.textCoords;
+            int startWeight = vertex.startWeight;
+            int numWeights = vertex.weightCount;
 
             for (int i = startWeight; i < startWeight + numWeights; i++) {
                 MD5Mesh.MD5Weight weight = weights.get(i);
-                MD5JointInfo.MD5JointData joint = joints.get(weight.getJointIndex());
-                Vector3f rotatedPos = new Vector3f(weight.getPosition()).rotate(joint.getOrientation());
-                Vector3f acumPos = new Vector3f(joint.getPosition()).add(rotatedPos);
-                acumPos.mul(weight.getBias());
+                MD5Joint joint = joints.get(weight.jointIndex);
+                Vector3f rotatedPos = new Vector3f(weight.position).rotate(joint.orientation);
+                Vector3f acumPos = new Vector3f(joint.position).add(rotatedPos);
+                acumPos.mul(weight.bias);
                 vertexPos.add(acumPos);
             }
 
             vertexInfoList.add(new VertexInfo(vertexPos, vertexTextCoords));
         }
 
-        for (MD5Mesh.MD5Triangle tri : md5Mesh.getTriangles()) {
-            indices.add(tri.getVertex0());
-            indices.add(tri.getVertex1());
-            indices.add(tri.getVertex2());
+        for (MD5Mesh.MD5Triangle tri : md5Mesh.triangles) {
+            indices.add(tri.vertex0);
+            indices.add(tri.vertex1);
+            indices.add(tri.vertex2);
 
             // Normals
-            VertexInfo v0 = vertexInfoList.get(tri.getVertex0());
-            VertexInfo v1 = vertexInfoList.get(tri.getVertex1());
-            VertexInfo v2 = vertexInfoList.get(tri.getVertex2());
+            VertexInfo v0 = vertexInfoList.get(tri.vertex0);
+            VertexInfo v1 = vertexInfoList.get(tri.vertex1);
+            VertexInfo v2 = vertexInfoList.get(tri.vertex2);
             Vector3f pos0 = v0.position;
             Vector3f pos1 = v1.position;
             Vector3f pos2 = v2.position;
@@ -105,7 +102,7 @@ public class MD5Loader {
     }
 
     private static void handleTexture(Mesh mesh, MD5Mesh md5Mesh) {
-        String texturePath = md5Mesh.getTexture();
+        String texturePath = md5Mesh.texture;
         if (texturePath != null && texturePath.length() > 0) {
             String t = texturePath.substring(texturePath.lastIndexOf("/"));
             Texture texture = Texture.createClassTexture("test/animation" + t);

@@ -81,7 +81,6 @@ public class Main {
         monster.position.set(0f, 0f, 3f);
         monster.rotation.set(new Quaternionf().rotate((float) -Math.toRadians(90), 0, 0));
 
-
         //<editor-fold defaultstate="collapsed" desc="void init">
         camera = new FirstPerson(new Vector3f(0f, 3f, 0f), width, height);
 
@@ -469,7 +468,7 @@ public class Main {
         glUniformMatrix4fv(shader.getLocation("model"), false, gameItem5.getModelMatrix().get(fb));
         gameItem5.draw(0);
 
-        gameItem6.rotation.set(new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1, 0)));
+        gameItem6.rotation.set(new Quaternionf().rotateAxis((float) glfwGetTime(), new Vector3f(0, 1f, 0)));
         glUniformMatrix4fv(shader.getLocation("model"), false, gameItem6.getModelMatrix().get(fb));
         gameItem6.draw(0);
 

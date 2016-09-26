@@ -7,51 +7,9 @@ import java.util.List;
 
 public class MD5Model {
 
-    private MD5JointInfo jointInfo;
-
-    private MD5ModelHeader header;
-
-    private List<MD5Mesh> meshes;
-
-    public MD5Model() {
-        meshes = new ArrayList<>();
-    }
-
-    public MD5JointInfo getJointInfo() {
-        return jointInfo;
-    }
-
-    public void setJointInfo(MD5JointInfo jointInfo) {
-        this.jointInfo = jointInfo;
-    }
-
-    public MD5ModelHeader getHeader() {
-        return header;
-    }
-
-    public void setHeader(MD5ModelHeader header) {
-        this.header = header;
-    }
-
-    public List<MD5Mesh> getMeshes() {
-        return meshes;
-    }
-
-    public void setMeshes(List<MD5Mesh> meshes) {
-        this.meshes = meshes;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder str = new StringBuilder("MD5MeshModel: " + System.lineSeparator());
-        str.append(getHeader()).append(System.lineSeparator());
-        str.append(getJointInfo()).append(System.lineSeparator());
-
-        for (MD5Mesh mesh : meshes) {
-            str.append(mesh).append(System.lineSeparator());
-        }
-        return str.toString();
-    }
+    public MD5ModelHeader header;
+    public List<MD5Joint> joints;
+    public List<MD5Mesh> meshes = new ArrayList<>();
 
     public static MD5Model parse(String meshModelFile) {
         List<String> lines = IOUtils.ioResourceToListString(meshModelFile);
@@ -60,15 +18,15 @@ public class MD5Model {
 
         int numLines = lines != null ? lines.size() : 0;
         if (numLines == 0) {
-            throw new RuntimeException("Cannot parse empty file");
+            throw new RuntimeException("Cannot process empty file");
         }
 
         // Parse Header
         boolean headerEnd = false;
         int start = 0;
         for (int i = 0; i < numLines && !headerEnd; i++) {
-            String line = lines.get(i);
-            headerEnd = line.trim().endsWith("{");
+            String line = lines.get(i).trim();
+            headerEnd = line.endsWith("{");
             start = i;
         }
         if (!headerEnd) {
@@ -76,7 +34,7 @@ public class MD5Model {
         }
         List<String> headerBlock = lines.subList(0, start);
         MD5ModelHeader header = MD5ModelHeader.parse(headerBlock);
-        result.setHeader(header);
+        result.header = header;
 
         // Parse the rest of block
         int blockStart = 0;
@@ -101,12 +59,11 @@ public class MD5Model {
     private static void parseBlock(MD5Model model, String blockId, List<String> blockBody) {
         switch (blockId) {
             case "joints":
-                MD5JointInfo jointInfo = MD5JointInfo.parse(blockBody);
-                model.setJointInfo(jointInfo);
+                model.joints = MD5Joint.parse(blockBody);
                 break;
             case "mesh":
-                MD5Mesh md5Mesh = MD5Mesh.parse(blockBody);
-                model.getMeshes().add(md5Mesh);
+                MD5Mesh md5Mesh = MD5Mesh.process(blockBody);
+                model.meshes.add(md5Mesh);
                 break;
             default:
                 break;

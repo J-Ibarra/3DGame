@@ -4,51 +4,17 @@ import java.util.List;
 
 public class MD5ModelHeader {
 
-    private String version;
+    public String version;
+    public String commandLine;
+    public int numJoints;
+    public int numMeshes;
 
-    private String commandLine;
-
-    private int numJoints;
-
-    private int numMeshes;
-
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
-
-    public String getCommandLine() {
-        return commandLine;
-    }
-
-    public void setCommandLine(String commandLine) {
-        this.commandLine = commandLine;
-    }
-
-    public int getNumJoints() {
-        return numJoints;
-    }
-
-    public void setNumJoints(int numJoints) {
-        this.numJoints = numJoints;
-    }
-
-    public int getNumMeshes() {
-        return numMeshes;
-    }
-
-    public void setNumMeshes(int numMeshes) {
-        this.numMeshes = numMeshes;
-    }
 
     public static MD5ModelHeader parse(List<String> lines) {
         MD5ModelHeader header = new MD5ModelHeader();
         int numLines = lines != null ? lines.size() : 0;
         if (numLines == 0) {
-            throw new RuntimeException("Cannot parse empty file");
+            throw new RuntimeException("Cannot process empty file");
         }
 
         boolean finishHeader = false;
@@ -62,16 +28,16 @@ public class MD5ModelHeader {
 
                 switch (paramName) {
                     case "MD5Version":
-                        header.setVersion(paramValue);
+                        header.version = paramValue;
                         break;
                     case "commandline":
-                        header.setCommandLine(paramValue);
+                        header.commandLine = paramValue;
                         break;
                     case "numJoints":
-                        header.setNumJoints(Integer.parseInt(paramValue));
+                        header.numJoints = Integer.parseInt(paramValue);
                         break;
                     case "numMeshes":
-                        header.setNumMeshes(Integer.parseInt(paramValue));
+                        header.numMeshes = Integer.parseInt(paramValue);
                         break;
                     case "joints":
                         finishHeader = true;
@@ -80,6 +46,6 @@ public class MD5ModelHeader {
             }
         }
 
-        return header;        
-    }    
+        return header;
+    }
 }
