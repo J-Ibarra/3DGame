@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Created by Jcs on 26/9/2016.
+ */
 public class MD5Mesh {
 
     private static final String FLOAT_REGEXP = "[+-]?\\d*\\.?\\d*";
@@ -19,7 +22,7 @@ public class MD5Mesh {
     private static final Pattern PATTERN_WEIGHT = Pattern.compile("\\s*weight\\s*(\\d+)\\s*(\\d+)\\s*" +
             "(" + FLOAT_REGEXP + ")\\s*" + VECTOR3_REGEXP);
 
-    public String texture;
+    public String texture = null;
     public List<MD5Vertex> vertices;
     public List<MD5Triangle> triangles;
     public List<MD5Weight> weights;
@@ -30,77 +33,85 @@ public class MD5Mesh {
         this.weights = new ArrayList<>();
     }
 
-    public static MD5Mesh process(List<String> meshBlock) {
-        MD5Mesh mesh = new MD5Mesh();
-        List<MD5Vertex> vertices = mesh.vertices;
-        List<MD5Triangle> triangles = mesh.triangles;
-        List<MD5Weight> weights = mesh.weights;
-
-        for (String line : meshBlock) {
-            if (line.contains("shader")) {
-                Matcher textureMatcher = PATTERN_SHADER.matcher(line);
-                if (textureMatcher.matches()) {
-                    mesh.texture = textureMatcher.group(1);
-
-                }
-            } else if (line.contains("vert")) {
-                Matcher vertexMatcher = PATTERN_VERTEX.matcher(line);
-                if (vertexMatcher.matches()) {
-                    MD5Vertex vertex = new MD5Vertex();
-                    vertex.index = (Integer.parseInt(vertexMatcher.group(1)));
-                    float x = Float.parseFloat(vertexMatcher.group(2));
-                    float y = Float.parseFloat(vertexMatcher.group(3));
-                    vertex.textCoords = (new Vector2f(x, y));
-                    vertex.startWeight = (Integer.parseInt(vertexMatcher.group(4)));
-                    vertex.weightCount = (Integer.parseInt(vertexMatcher.group(5)));
-                    vertices.add(vertex);
-                }
-            } else if (line.contains("tri")) {
-                Matcher triMatcher = PATTERN_TRI.matcher(line);
-                if (triMatcher.matches()) {
-                    MD5Triangle triangle = new MD5Triangle();
-                    triangle.index = (Integer.parseInt(triMatcher.group(1)));
-                    triangle.vertex0 = (Integer.parseInt(triMatcher.group(2)));
-                    triangle.vertex1 = (Integer.parseInt(triMatcher.group(3)));
-                    triangle.vertex2 = (Integer.parseInt(triMatcher.group(4)));
-                    triangles.add(triangle);
-                }
-            } else if (line.contains("weight")) {
-                Matcher weightMatcher = PATTERN_WEIGHT.matcher(line);
-                if (weightMatcher.matches()) {
-                    MD5Weight weight = new MD5Weight();
-                    weight.index = (Integer.parseInt(weightMatcher.group(1)));
-                    weight.jointIndex = (Integer.parseInt(weightMatcher.group(2)));
-                    weight.bias = (Float.parseFloat(weightMatcher.group(3)));
-                    float x = Float.parseFloat(weightMatcher.group(4));
-                    float y = Float.parseFloat(weightMatcher.group(5));
-                    float z = Float.parseFloat(weightMatcher.group(6));
-                    weight.position = (new Vector3f(x, y, z));
-                    weights.add(weight);
-                }
+    public void processLine(String line) {
+        if (line.contains("shader")) {
+            Matcher matcher = PATTERN_SHADER.matcher(line);
+            if (matcher.matches())
+                this.texture = matcher.group(1);
+        } else if (line.contains("vert")) {
+            Matcher matcher = PATTERN_VERTEX.matcher(line);
+            if (matcher.matches()) {
+                int index = Integer.parseInt(matcher.group(1));
+                float x = Float.parseFloat(matcher.group(2));
+                float y = Float.parseFloat(matcher.group(3));
+                Vector2f textCoords = new Vector2f(x, y);
+                int startWeight = (Integer.parseInt(matcher.group(4)));
+                int weightCount = (Integer.parseInt(matcher.group(5)));
+                vertices.add(new MD5Vertex(index, textCoords, startWeight, weightCount));
+            }
+        } else if (line.contains("tri")) {
+            Matcher matcher = PATTERN_TRI.matcher(line);
+            if (matcher.matches()) {
+                int index = Integer.parseInt(matcher.group(1));
+                int vertex0 = Integer.parseInt(matcher.group(2));
+                int vertex1 = Integer.parseInt(matcher.group(3));
+                int vertex2 = Integer.parseInt(matcher.group(4));
+                triangles.add(new MD5Triangle(index, vertex0, vertex1, vertex2));
+            }
+        } else if (line.contains("weight")) {
+            Matcher matcher = PATTERN_WEIGHT.matcher(line);
+            if (matcher.matches()) {
+                int index = (Integer.parseInt(matcher.group(1)));
+                int jointIndex = (Integer.parseInt(matcher.group(2)));
+                float bias = (Float.parseFloat(matcher.group(3)));
+                float x = Float.parseFloat(matcher.group(4));
+                float y = Float.parseFloat(matcher.group(5));
+                float z = Float.parseFloat(matcher.group(6));
+                Vector3f position = new Vector3f(x, y, z);
+                weights.add(new MD5Weight(index,jointIndex,bias,position));
             }
         }
-        return mesh;
     }
 
     public static class MD5Vertex {
-        public int index;
-        public Vector2f textCoords;
-        public int startWeight;
-        public int weightCount;
+        public final int index;
+        public final Vector2f textCoords;
+        public final int startWeight;
+        public final int weightCount;
+
+        public MD5Vertex(int index, Vector2f textCoords, int startWeight, int weightCount) {
+            this.index = index;
+            this.textCoords = textCoords;
+            this.startWeight = startWeight;
+            this.weightCount = weightCount;
+        }
     }
 
     public static class MD5Triangle {
-        public int index;
-        public int vertex0;
-        public int vertex1;
-        public int vertex2;
+        public final int index;
+        public final int vertex0;
+        public final int vertex1;
+        public final int vertex2;
+
+        public MD5Triangle(int index, int vertex0, int vertex1, int vertex2) {
+            this.index = index;
+            this.vertex0 = vertex0;
+            this.vertex1 = vertex1;
+            this.vertex2 = vertex2;
+        }
     }
 
     public static class MD5Weight {
-        public int index;
-        public int jointIndex;
-        public float bias;
-        public Vector3f position;
+        public final int index;
+        public final int jointIndex;
+        public final float bias;
+        public final Vector3f position;
+
+        public MD5Weight(int index, int jointIndex, float bias, Vector3f position) {
+            this.index = index;
+            this.jointIndex = jointIndex;
+            this.bias = bias;
+            this.position = position;
+        }
     }
 }

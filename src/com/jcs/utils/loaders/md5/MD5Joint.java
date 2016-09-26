@@ -3,11 +3,12 @@ package com.jcs.utils.loaders.md5;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Created by Jcs on 26/9/2016.
+ */
 public class MD5Joint {
 
     private static final String FLOAT_REGEXP = "[+-]?\\d*\\.?\\d*";
@@ -18,32 +19,46 @@ public class MD5Joint {
             + VECTOR3_REGEXP + "\\s*" + VECTOR3_REGEXP + ".*";
     private static final Pattern PATTERN_JOINT = Pattern.compile(JOINT_REGEXP);
 
-    public String name;
-    public int parentIndex;
-    public Vector3f position;
-    public Quaternionf orientation;
+    public final String name;
+    public final int parentIndex;
+    public final Vector3f position;
+    public final Quaternionf orientation;
 
-    public static MD5Joint parseLine(String line) {
-        MD5Joint result = null;
+    public MD5Joint(String name, int parentIndex, Vector3f position, Quaternionf orientation) {
+        this.name = name;
+        this.parentIndex = parentIndex;
+        this.position = position;
+        this.orientation = orientation;
+    }
+
+    public static MD5Joint processLine(String line) {
+        String name = null;
+        int parentIndex = -2;
+        Vector3f position = null;
+        Quaternionf orientation = null;
+
         Matcher matcher = PATTERN_JOINT.matcher(line);
         if (matcher.matches()) {
-            result = new MD5Joint();
-            result.name = (matcher.group(1));
-            result.parentIndex = (Integer.parseInt(matcher.group(2)));
+            name = (matcher.group(1));
+            parentIndex = (Integer.parseInt(matcher.group(2)));
             float x = Float.parseFloat(matcher.group(3));
             float y = Float.parseFloat(matcher.group(4));
             float z = Float.parseFloat(matcher.group(5));
-            result.position = new Vector3f(x, y, z);
+            position = new Vector3f(x, y, z);
 
             x = Float.parseFloat(matcher.group(6));
             y = Float.parseFloat(matcher.group(7));
             z = Float.parseFloat(matcher.group(8));
-            result.orientation = calculateQuaternion(new Quaternionf(x, y, z, 0f));
+            orientation = calculateQuaternion(new Quaternionf(x, y, z, 0f));
         }
-        return result;
+
+        if (name == null || parentIndex == -2 || position == null || orientation == null)
+            throw new RuntimeException("");
+        return new MD5Joint(name, parentIndex, position, orientation);
+
     }
 
-    public static Quaternionf calculateQuaternion(Quaternionf q) {
+    private static Quaternionf calculateQuaternion(Quaternionf q) {
         float temp = 1.0f - q.lengthSquared();
 
         if (temp < 0.0f)
@@ -52,16 +67,5 @@ public class MD5Joint {
             q.w = -(float) (Math.sqrt(temp));
 
         return q;
-    }
-
-    public static List<MD5Joint> parse(List<String> blockBody) {
-        List<MD5Joint> joints = new ArrayList<>();
-        for (String line : blockBody) {
-            MD5Joint jointData = MD5Joint.parseLine(line);
-            if (jointData != null) {
-                joints.add(jointData);
-            }
-        }
-        return joints;
     }
 }

@@ -5,7 +5,6 @@ import com.jcs.gfx.camera.FirstPerson;
 import com.jcs.gfx.camera.FreeCamera;
 import com.jcs.gfx.camera.GameItem;
 import com.jcs.utils.loaders.md5.MD5Loader;
-import com.jcs.utils.loaders.md5.MD5Model;
 import com.jcs.utils.loaders.obj.OBJLoader;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -75,9 +74,9 @@ public class Main {
 
     private void init() {
 
-        MD5Model md5MeshModel = MD5Model.parse("test/animation/monster.md5mesh");
-        monster = MD5Loader.process(md5MeshModel);
-        monster.scale = 0.025f;
+        MD5Loader.MD5Model md5MeshModel = MD5Loader.loadMD5("test/animation/boblamp.md5mesh");
+        monster = MD5Loader.processModel(md5MeshModel);
+        monster.scale = 0.25f;
         monster.position.set(0f, 0f, 3f);
         monster.rotation.set(new Quaternionf().rotate((float) -Math.toRadians(90), 0, 0));
 

@@ -3,6 +3,7 @@ package com.jcs.utils.loaders.md5;
 import com.jcs.gfx.Mesh;
 import com.jcs.gfx.Texture;
 import com.jcs.gfx.camera.GameItem;
+import com.jcs.utils.IOUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
@@ -11,11 +12,96 @@ import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Created by Jcs on 25/9/2016.
+ */
 public class MD5Loader {
 
-    private static final String NORMAL_FILE_SUFFIX = "_normal";
+    public static class MD5Model {
+        public final MD5Header header;
+        public final List<MD5Joint> joints;
+        public final List<MD5Mesh> meshes;
 
-    public static GameItem process(MD5Model md5Model) {
+        public MD5Model(MD5Header header, List<MD5Joint> joints, List<MD5Mesh> meshes) {
+            this.header = header;
+            this.joints = joints;
+            this.meshes = meshes;
+        }
+    }
+
+    private static class VertexInfo {
+
+        public Vector3f position;
+        public Vector2f textCoords;
+        public Vector3f normal;
+
+        public VertexInfo(Vector3f position) {
+            this.position = position;
+            normal = new Vector3f(0f);
+            textCoords = new Vector2f(0f);
+        }
+
+        public VertexInfo(Vector3f vertexPos, Vector2f vertexTextCoords) {
+            this(vertexPos);
+            textCoords.set(vertexTextCoords);
+        }
+    }
+
+    public static MD5Model loadMD5(String resource) {
+        List<String> strings = IOUtils.ioResourceToListString(resource);
+        MD5Header header = null;
+        List<MD5Joint> joints = null;
+        List<MD5Mesh> meshes = new ArrayList<>();
+
+        int numLines = strings != null ? strings.size() : -1;
+        if (numLines == -1)
+            throw new RuntimeException("could not processModel the resource");
+
+        int start = -1;
+        for (int i = 0; i < strings.size(); i++) {
+            String line = strings.get(i).trim();
+            if (line.endsWith("{")) {
+                start = i;
+                break;
+            }
+        }
+
+        if (start == -1)
+            throw new RuntimeException("could not read the header");
+
+        header = MD5Header.process(strings.subList(0, start));
+        MD5Mesh mesh = null;
+
+        int type = -1;
+        for (int i = start; i < strings.size(); i++) {
+            String line = strings.get(i).trim();
+            if (line.endsWith("{")) {
+                if (line.contains("joints")) {
+                    joints = new ArrayList<>();
+                    type = 0;
+                    continue;
+                } else if (line.contains("mesh")) {
+                    mesh = new MD5Mesh();
+                    type = 1;
+                }
+            } else if (line.endsWith("}")) {
+                if (type == 1)
+                    meshes.add(mesh);
+                type = -1;
+            } else {
+                if (type == 0) {
+                    joints.add(MD5Joint.processLine(line));
+                } else if (type == 1) {
+                    mesh.processLine(line);
+                }
+            }
+        }
+        if (header == null || joints == null || meshes.size() == 0 || mesh == null)
+            throw new RuntimeException("");
+        return new MD5Model(header, joints, meshes);
+    }
+
+    public static GameItem processModel(MD5Model md5Model) {
         List<Mesh> list = new ArrayList<>();
         for (MD5Mesh md5Mesh : md5Model.meshes) {
             Mesh mesh = generateMesh(md5Model, md5Mesh);
@@ -31,7 +117,6 @@ public class MD5Loader {
     private static Mesh generateMesh(MD5Model md5Model, MD5Mesh md5Mesh) {
         List<VertexInfo> vertexInfoList = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
-
         List<MD5Mesh.MD5Vertex> vertices = md5Mesh.vertices;
         List<MD5Mesh.MD5Weight> weights = md5Mesh.weights;
         List<MD5Joint> joints = md5Model.joints;
@@ -96,9 +181,7 @@ public class MD5Loader {
         Mesh.Data data1 = new Mesh.Data(1, 2, fbTex);
         Mesh.Data data2 = new Mesh.Data(2, 3, fbNor);
         int[] indicesArr = indices.stream().mapToInt(i -> i).toArray();
-        Mesh mesh = new Mesh(new Mesh.Data[]{data0, data1, data2}, indicesArr);
-
-        return mesh;
+        return new Mesh(new Mesh.Data[]{data0, data1, data2}, indicesArr);
     }
 
     private static void handleTexture(Mesh mesh, MD5Mesh md5Mesh) {
@@ -110,21 +193,5 @@ public class MD5Loader {
         }
     }
 
-    private static class VertexInfo {
 
-        public Vector3f position;
-        public Vector2f textCoords;
-        public Vector3f normal;
-
-        public VertexInfo(Vector3f position) {
-            this.position = position;
-            normal = new Vector3f(0f);
-            textCoords = new Vector2f(0f);
-        }
-
-        public VertexInfo(Vector3f vertexPos, Vector2f vertexTextCoords) {
-            this(vertexPos);
-            textCoords.set(vertexTextCoords);
-        }
-    }
 }
