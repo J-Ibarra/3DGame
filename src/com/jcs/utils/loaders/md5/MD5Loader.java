@@ -2,7 +2,7 @@ package com.jcs.utils.loaders.md5;
 
 import com.jcs.gfx.Mesh;
 import com.jcs.gfx.Texture;
-import com.jcs.gfx.camera.GameItem;
+import com.jcs.gfx.GameItem;
 import com.jcs.utils.IOUtils;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
