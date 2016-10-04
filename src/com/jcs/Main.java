@@ -46,6 +46,7 @@ public class Main {
     private GLFWWindowCloseCallback windowCloseCallback;
     private GLFWFramebufferSizeCallback framebufferSizeCallback;
 
+
     private ShaderProgram shader;
 
     private FirstPerson camera;
@@ -67,6 +68,9 @@ public class Main {
     private Matrix4f view;
     private Matrix4f projection;
     private Matrix4f ortho;
+
+    private boolean captureMouse = true;
+
 
     private void init() {
 
@@ -380,7 +384,8 @@ public class Main {
             public void invoke(long window, double xpos, double ypos) {
                 //xpos = 0;
                 //ypos = 0;
-                camera.processMouseMovement(window, (float) xpos, (float) ypos);
+                if (captureMouse)
+                    camera.processMouseMovement(window, (float) xpos, (float) ypos);
             }
         });
 
@@ -390,6 +395,11 @@ public class Main {
                 if (button == GLFW_MOUSE_BUTTON_3 && action == GLFW_RELEASE) {
                     camera.zoom = 60f;
                     projection.setPerspective((float) Math.toRadians(camera.zoom), width / height, 0.01f, 100.0f);
+                }
+
+                if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
+                    captureMouse = !captureMouse;
+                    glfwSetInputMode(window, GLFW_CURSOR, captureMouse ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
                 }
             }
         });
